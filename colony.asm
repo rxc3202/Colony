@@ -15,12 +15,12 @@
 # || param block constants ||
 # ===========================
 
-_BOARD_DIM = 0
-_GENS = 4
-_A_CELLS = 8
-_B_CELLS = 12
-_NEXT_X = 16
-_NEXT_Y  = 20
+DIM_OFFSET = 0
+GEN_OFFSET = 4
+A_OFFSET = 8
+B_OFFSET = 12
+NEXT_A_OFFSET = 16
+NEXT_B_OFFSET = 20
 
 # syscall codes
 
@@ -279,6 +279,7 @@ main:
         
 
         # == test input grabbing == #
+        la      $a0, param_block
         jal     debug_params
 
 end_main:
@@ -361,7 +362,8 @@ debug_params:
         la      $a0, d_dim
         syscall
         li      $v0, PRINT_INT
-        lw      $a0, _BOARD_DIM($s0)
+        lw      $a0, GEN_OFFSET($s0)
+        lw      $a0, 0($a0)
         syscall
 
         # print generations #
@@ -370,7 +372,8 @@ debug_params:
         la      $a0, d_gen
         syscall
         li      $v0, PRINT_INT
-        lw      $a0, _GENS($s0)
+        lw      $a0, GEN_OFFSET($s0)
+        lw      $a0, 0($a0)                         #load val at 0(label)
         syscall
 
         # print colony A size #
@@ -379,7 +382,8 @@ debug_params:
         la      $a0, d_a_cells
         syscall
         li      $v0, PRINT_INT
-        lw      $a0, _A_CELLS($s0)
+        lw      $a0, A_OFFSET($s0)
+        lw      $a0, 0($a0)                         #load val at 0(label)
         syscall
 
         # print locations #
@@ -399,7 +403,8 @@ debug_params:
         syscall
 
         li      $v0, PRINT_INT
-        lw      $a0, _B_CELLS($s0)
+        lw      $a0, B_OFFSET($s0)
+        lw      $a0, 0($a0)                         #load val at 0(label)
         syscall
 
         # print locations#
@@ -410,6 +415,11 @@ debug_params:
         #la      $a0, a_x_coordinates       
         #sw      $a1, _A_CELLS($s0)
         #jal     print_array
+
+        li      $v0, PRINT_STRING
+        la      $a0, newline
+        syscall
+        
 
         sw      $ra, 4($sp)
         sw      $s0, 0($sp)

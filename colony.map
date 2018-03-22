@@ -2,12 +2,13 @@ Load map
 ========
 
 Module:  colony.obj
- Text segment:  396 bytes, load point 0x00400000
+ Text segment:  436 bytes, load point 0x00400000
  Data segment:  15048 bytes, load point 0x10000000
  Symbols:
                Name Section Mode    Value
-       debug_params   Text   R   0x004000dc
-           _A_CELLS          A   0x00000008
+       debug_params   Text   R   0x004000e4
+         DIM_OFFSET          A   0x00000000
+           B_OFFSET          A   0x0000000c
        live_cells_A   Data   R   0x1000003a
        live_cells_B   Data   R   0x10000065
              hyphen   Data   R   0x1000023b
@@ -16,8 +17,9 @@ Module:  colony.obj
                   B   Data   R   0x10000241
               d_dim   Data   R   0x100001ca
         generations   Data   R   0x10000248
-         print_loop   Text   R   0x004000a0
+         print_loop   Text   R   0x004000a8
            READ_INT          A   0x00000005
+         GEN_OFFSET          A   0x00000004
     b_x_coordinates   Data   R   0x10001e80
            b_next_x   Data   R   0x10001e7c
            b_next_y   Data   R   0x10002c90
@@ -26,10 +28,11 @@ Module:  colony.obj
       illegal_cells   Data   R   0x10000173
           d_b_cells   Data   R   0x10000202
             B_cells   Data   R   0x10000250
+      NEXT_B_OFFSET          A   0x00000014
      gen_banner_end   Data   R   0x10000106
-        print_array   Text   R   0x00400098
+           A_OFFSET          A   0x00000008
+        print_array   Text   R   0x004000a0
               d_gen   Data   R   0x100001df
-           _B_CELLS          A   0x0000000c
           board_dim   Data   R   0x10000244
        FRAMESIZE_24          A   0x00000018
    gen_banner_start   Data   R   0x100000f2
@@ -45,16 +48,14 @@ Module:  colony.obj
            a_next_y   Data   R   0x10001068
     b_y_coordinates   Data   R   0x10002c94
     a_y_coordinates   Data   R   0x1000106c
-         print_done   Text   R   0x004000c8
+         print_done   Text   R   0x004000d0
        illegal_gens   Data   R   0x1000013e
-            _NEXT_X          A   0x00000010
-            _NEXT_Y          A   0x00000014
        FRAMESIZE_40          A   0x00000028
       illegal_point   Data   R   0x100001a7
        FRAMESIZE_48          A   0x00000030
-           end_main   Text   R   0x0040008c
+           end_main   Text   R   0x00400094
         FRAMESIZE_8          A   0x00000008
-              _GENS          A   0x00000004
+      NEXT_A_OFFSET          A   0x00000010
                 bar   Data   R   0x1000023d
     enter_locations   Data   R   0x10000090
         param_block   Data   R   0x10003aa4
@@ -63,27 +64,26 @@ Module:  colony.obj
         READ_STRING          A   0x00000008
           PRINT_INT          A   0x00000001
        illegal_size   Data   R   0x10000114
-         _BOARD_DIM          A   0x00000000
 
 Module:  get_input.obj
- Text segment:  276 bytes, load point 0x0040018c
+ Text segment:  276 bytes, load point 0x004001b4
  Symbols:
                Name Section Mode    Value
             B_CELLS          A   0x0000000c
-        B_cells_end   Text   R   0x00400284
-        get_A_cells   Text   RG  0x004001b8
-        A_cells_end   Text   R   0x00400210
+        B_cells_end   Text   R   0x004002ac
+        get_A_cells   Text   RG  0x004001e0
+        A_cells_end   Text   R   0x00400238
            READ_INT          A   0x00000005
           BOARD_DIM          A   0x00000000
      CELL_FRAMESIZE          A   0x00000018
-         loc_loop_A   Text   R   0x004001e0
-         loc_loop_B   Text   R   0x00400254
+         loc_loop_A   Text   R   0x00400208
+         loc_loop_B   Text   R   0x0040027c
             A_CELLS          A   0x00000008
        PRINT_STRING          A   0x00000004
             NEXT_AX          A   0x00000010
             NEXT_AY          A   0x00000014
-        get_integer   Text   RG  0x0040018c
-        get_B_cells   Text   RG  0x0040022c
+        get_integer   Text   RG  0x004001b4
+        get_B_cells   Text   RG  0x00400254
             NEXT_BX          A   0x00000018
             NEXT_BY          A   0x0000001c
                GENS          A   0x00000004
@@ -91,8 +91,8 @@ Module:  get_input.obj
           PRINT_INT          A   0x00000001
 
 Module:  r2k_startup.obj
- Text segment:  36 bytes, load point 0x004002a0
+ Text segment:  36 bytes, load point 0x004002c8
  Symbols:
                Name Section Mode    Value
           SYS_EXIT2          A   0x00000011
-     __r2k__entry__   Text   RG  0x004002a4
+     __r2k__entry__   Text   RG  0x004002cc
