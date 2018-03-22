@@ -65,7 +65,7 @@ enter_locations:
 banner:
         .ascii "\n**********************\n"
         .ascii "****    Colony    ****\n"
-        .asciiz "**********************"
+        .asciiz "**********************\n"
 
 gen_banner_start:
         .asciiz "====    GENERATION "
@@ -117,6 +117,13 @@ d_a_loc:
 d_b_loc:
         .asciiz "\n B Coordinates: "
 
+rp:
+        .asciiz "("
+comma:
+        .asciiz ", "
+lp:
+        .asciiz ")"
+
 # ====================
 #    BOARD STRINGS  
 # ====================
@@ -154,36 +161,18 @@ A_cells:
 B_cells:
         .word       -1
 
-a_next_x:
-        .word       a_x_coordinates
+a_next:
+        .word       a_coordinates
 
-a_x_coordinates:                                          
-        .space      3600                            #space for 300 x's
-
+a_coordinates:                                          
+        .space      7200                            #space for 300 x's
         .align      2
 
-a_next_y:
-        .word       a_y_coordinates
+b_next:
+        .word       b_coordinates
 
-a_y_coordinates:
-        .space      3600                            #space for 300 y's
-        
-        .align      2
-
-b_next_x:
-        .word       b_x_coordinates
-
-b_x_coordinates:                                          
-        .space      3600                            #space for 300 x's
-
-        .align      2
-
-b_next_y:
-        .word       b_y_coordinates
-
-b_y_coordinates:
-        .space      3600                            #space for 300 y's
-        
+b_coordinates:
+        .space      7200                            #space for 300 y's
         .align      2
 
 param_block:
@@ -192,10 +181,8 @@ param_block:
         .word       generations                     #4 offset
         .word       A_cells                         #8 offset
         .word       B_cells                         #12 offset
-        .word       a_next_x                        #16 offset
-        .word       a_next_y                        #20 offset
-        .word       b_next_x                        #24 offset
-        .word       b_next_y                        #28 offset
+        .word       a_next                          #16 offset
+        .word       b_next                          #20 offset
 
 
 ###########################################
@@ -251,12 +238,12 @@ main:
 
         # print and get A colony locations #
 
-        #li      $v0, PRINT_STRING                    
-        #la      $a0, enter_locations
-        #syscall
-        #
-        #la      $a0, param_block
-        #jal     get_A_cells
+        li      $v0, PRINT_STRING                    
+        la      $a0, enter_locations
+        syscall
+        
+        la      $a0, param_block
+        jal     get_A_cells
 
         # print and get B colony size #
 
@@ -265,7 +252,6 @@ main:
         syscall
         
         la      $a0, B_cells
-        #lw      $a0, 0($a0)
         jal     get_integer
         
         # print and get B colony locations #
@@ -289,11 +275,6 @@ end_main:
 
 
 
-
-
-
-
-
 ###########################################
 # ======================================= #
 # ||        Helper Code                || #
@@ -301,9 +282,12 @@ end_main:
 ###########################################
 
 # =========================================================
-# Name:             print_array
+# Name:             print_locations
 # =========================================================
-# Description:      prints an array of integers
+# Description:      prints an array of location "structs"
+#                   each structure is 8 bytes long where:
+#                       - 0 -> x coordinate
+#                       - 4 offset -> y coordinate
 #
 # Parameters:
 #       a0 -        the array to print
@@ -319,15 +303,33 @@ print_array:
 
 print_loop:
         beq     $t0, $a1, print_done                #done if i == n
+
+        la      $a0, lp
+        li      $v0, PRINT_STRING                   #print (
+        syscall
         
-        lw      $a0, 0($t1)                         #get a[i]
+        lw      $a0, 0($t1)                         #get a[i].x
         li      $v0, PRINT_INT
-        syscall                                     #print a[i]
+        syscall                                     #print a[i].x
+
+        la      $a0, lp
+        li      $v0, PRINT_STRING                   #print ,
+        syscall
         
-        la      $a0, space
-        li      $v0, PRINT_STRING                   #print space
+        lw      $a0, 4($t1)                         #get a[i].y
+        li      $v0, PRINT_INT
+        syscall                                     #print a[i].y
         
-        addi    $t1, $t1, 4                         #update pointer
+        la      $a0, lp
+        li      $v0, PRINT_STRING                   #print )
+        syscall
+
+        la      $a0, newline
+        li      $v0, PRINT_STRING                   #print \n
+        syscall
+        
+        
+        addi    $t1, $t1, 8                         #update pointer
         addi    $t0, $t0, 1                         #i++
         j       print_loop
 
@@ -420,13 +422,9 @@ debug_params:
         la      $a0, newline
         syscall
         
-
         sw      $ra, 4($sp)
         sw      $s0, 0($sp)
         addi    $sp, $sp, 8
 
         jr      $ra
-
-
-
 
