@@ -73,7 +73,7 @@ gen_banner_start:
 gen_banner_end:
         .asciiz "    ====\n"
 
-new_line: 
+newline: 
         .asciiz "\n"
 
 space:
@@ -155,7 +155,7 @@ B_cells:
         .word       -1
 
 a_next_x:
-        .word       x_coordinates
+        .word       a_x_coordinates
 
 a_x_coordinates:                                          
         .space      3600                            #space for 300 x's
@@ -163,7 +163,7 @@ a_x_coordinates:
         .align      2
 
 a_next_y:
-        .word       y_coordinates
+        .word       a_y_coordinates
 
 a_y_coordinates:
         .space      3600                            #space for 300 y's
@@ -171,7 +171,7 @@ a_y_coordinates:
         .align      2
 
 b_next_x:
-        .word       x_coordinates
+        .word       b_x_coordinates
 
 b_x_coordinates:                                          
         .space      3600                            #space for 300 x's
@@ -179,7 +179,7 @@ b_x_coordinates:
         .align      2
 
 b_next_y:
-        .word       y_coordinates
+        .word       b_y_coordinates
 
 b_y_coordinates:
         .space      3600                            #space for 300 y's
@@ -211,8 +211,8 @@ param_block:
         .globl      get_B_cells
 
 main:       
-        addi    $sp, $sp, -FRAMESIZE_48 
-        sw      $ra, -4+FRAMESIZE_48
+        addi    $sp, $sp, -FRAMESIZE_48
+        sw      $ra, -4+FRAMESIZE_48($sp)
         
         li      $v0, PRINT_STRING                   #print banner
         la      $a0, banner
@@ -251,12 +251,12 @@ main:
 
         # print and get A colony locations #
 
-        li      $v0, PRINT_STRING                    
-        la      $a0, enter_locations
-        syscall
-        
-        la      $a0, param_block
-        jal     get_A_cells
+        #li      $v0, PRINT_STRING                    
+        #la      $a0, enter_locations
+        #syscall
+        #
+        #la      $a0, param_block
+        #jal     get_A_cells
 
         # print and get B colony size #
 
@@ -265,26 +265,26 @@ main:
         syscall
         
         la      $a0, B_cells
+        #lw      $a0, 0($a0)
         jal     get_integer
         
         # print and get B colony locations #
 
-        li      $v0, PRINT_STRING                    
-        la      $a0, enter_locations
-        syscall
-        
-        la      $a0, param_block
-        jal     get_B_cells
+        #li      $v0, PRINT_STRING                    
+        #la      $a0, enter_locations
+        #syscall
+        #
+        #la      $a0, param_block
+        #jal     get_B_cells
         
 
         # == test input grabbing == #
-        jal     print_debug
+        jal     debug_params
 
-        
-
-end_main
-        lw          $ra, -4+FRAMESIZE_48
-        addi        $sp, $sp, -FRAMESIZE_48 
+end_main:
+        lw          $ra, -4+FRAMESIZE_48($sp)
+        addi        $sp, $sp, -FRAMESIZE_48
+        jr          $ra
 
 
 
@@ -338,7 +338,7 @@ print_done:
         jr      $ra
 
 # =========================================================
-# Name:             print_params
+# Name:             debug_params
 # =========================================================
 # Description:      print the inputs in the param block
 #
@@ -348,6 +348,11 @@ print_done:
 #       s0 -        the saved parameter block
 # =========================================================
 debug_params:
+        
+        addi    $sp, $sp, -8
+        sw      $ra, 4($sp)
+        sw      $s0, 0($sp)
+        
         move    $s0, $a0                            #save param block
 
         # print board dimensions #
@@ -382,16 +387,17 @@ debug_params:
         la      $a0, d_a_loc
         syscall
 
-        la      $a0, a_x_coordinates       
-        sw      $a1, _A_CELLS($s0)
-        jal     print_array
+        #la      $a0, a_x_coordinates       
+        #sw      $a1, _A_CELLS($s0)
+        #jal     print_array
 
 
         # print colony B size#
 
-        li      $v0, PRINT_INT
+        li      $v0, PRINT_STRING
         la      $a0, d_b_cells
         syscall
+
         li      $v0, PRINT_INT
         lw      $a0, _B_CELLS($s0)
         syscall
@@ -401,9 +407,16 @@ debug_params:
         la      $a0, d_b_loc
         syscall
 
-        la      $a0, a_x_coordinates       
-        sw      $a1, _A_CELLS($s0)
-        jal     print_array
+        #la      $a0, a_x_coordinates       
+        #sw      $a1, _A_CELLS($s0)
+        #jal     print_array
+
+        sw      $ra, 4($sp)
+        sw      $s0, 0($sp)
+        addi    $sp, $sp, 8
+
+        jr      $ra
+
 
 
 
