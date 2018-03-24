@@ -303,7 +303,7 @@ end_main:
 # =========================================================
 print_locations:
         li      $t0, 0                              # i == 0
-        move    $t1, $a0                         # pointer
+        move    $t1, $a0                            # pointer
 
 print_loop:
         beq     $t0, $a1, print_done                #done if i == n 

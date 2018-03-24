@@ -105,13 +105,13 @@ loc_loop_A:
 
         li      $v0, READ_INT
         syscall
-        move    $v0, $t1
+        move    $t1, $v0
 
         # get col coordinate # 
 
         li      $v0, READ_INT
         syscall
-        move    $v0, $t2
+        move    $t2, $v0
 
         # place into array #                        # 2 values placed in
 

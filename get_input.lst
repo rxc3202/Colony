@@ -105,13 +105,13 @@
  105 0060               
  106 0060 34020005	        li      $v0, READ_INT
  107 0064 0000000C	        syscall
- 108 0068 01201021	        move    $v0, $t1
+ 108 0068 00404821	        move    $t1, $v0
  109 006c               
  110 006c                       # get col coordinate # 
  111 006c               
  112 006c 34020005	        li      $v0, READ_INT
  113 0070 0000000C	        syscall
- 114 0074 01401021	        move    $v0, $t2
+ 114 0074 00405021	        move    $t2, $v0
  115 0078               
  116 0078                       # place into array #                        # 2 values placed in
  117 0078               

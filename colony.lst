@@ -414,7 +414,7 @@
  303 00bc               # =========================================================
  304 00bc               print_locations:
  305 00bc 34080000	        li      $t0, 0                              # i == 0
- 306 00c0 00804821	        move    $t1, $a0                         # pointer
+ 306 00c0 00804821	        move    $t1, $a0                            # pointer
  307 00c4               
  308 00c4               print_loop:
  309 00c4 11050019	        beq     $t0, $a1, print_done                #done if i == n 
