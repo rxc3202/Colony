@@ -162,24 +162,38 @@ get_B_cells:
         sw      $s2, -16+CELL_FRAMESIZE($sp)                       
         sw      $s3, -20+CELL_FRAMESIZE($sp)
         
+        lw      $s0, B_CELLS($a0)                   #load addr of cell cnt
+        lw      $s0, 0($s0)                         #load int inside addr 
+    
+        lw      $s2, NEXT_B($a0)                    #load addr of loc buf
+        lw      $s2, 0($s2)                         #load addr of next el.
+        
+        move    $s1, $zero                          #i = 0
 
 
 loc_loop_B:
         slt     $t0, $s1, $s0
-        bne     $t0, $zero, B_cells_end
+        beq     $t0, $zero, B_cells_end
         
         # get row coordinate # 
 
         li      $v0, READ_INT
         syscall
+        move    $t1, $v0
 
         # get col coordinate # 
 
         li      $v0, READ_INT
         syscall
+        move    $t2, $v0
+
+        # place into array #                        # 2 values placed in
+
+        sw      $t1, 0($s2)                         # 0($s2) = x value
+        sw      $t2, 4($s2)                         # 4($s2) = y value
+        addi    $s2, $s2, 8                         # increment pointer
 
         # increment loop counter #
-
         addi    $s1, $s1, 1
         j       loc_loop_B
 

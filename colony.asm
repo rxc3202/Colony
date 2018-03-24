@@ -260,12 +260,12 @@ main:
         
         # print and get B colony locations #
 
-        #li      $v0, PRINT_STRING                    
-        #la      $a0, enter_locations
-        #syscall
-        #
-        #la      $a0, param_block
-        #jal     get_B_cells
+        li      $v0, PRINT_STRING                    
+        la      $a0, enter_locations
+        syscall
+        
+        la      $a0, param_block
+        jal     get_B_cells
         
 
         # == test input grabbing == #
@@ -421,9 +421,10 @@ debug_params:
         la      $a0, d_b_loc
         syscall
 
-        #la      $a0, a_x_coordinates       
-        #sw      $a1, _A_CELLS($s0)
-        #jal     print_locations
+        la      $a0, b_coordinates                  #get addr of arr
+        lw      $a1, B_OFFSET($s0)                  #get addr of size
+        lw      $a1, 0($a1)                         #get size
+        jal     print_locations
 
         li      $v0, PRINT_STRING
         la      $a0, newline
