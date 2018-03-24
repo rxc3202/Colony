@@ -28,6 +28,8 @@ A_CELLS = 8
 B_CELLS = 12
 NEXT_A = 16
 NEXT_B  = 20
+A_ARR = 24
+B_ARR = 28
 
         .text
         .align      2

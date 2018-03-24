@@ -21,6 +21,8 @@ A_OFFSET = 8
 B_OFFSET = 12
 NEXT_A_OFFSET = 16
 NEXT_B_OFFSET = 20
+A_ARRAY_OFFSET = 24
+B_ARRAY_OFFSET = 28
 
 # syscall codes
 
@@ -56,7 +58,7 @@ live_cells_B:
         .asciiz "\nEnter number of live cells for colony B: "
 
 enter_locations:
-        .asciiz "\nStart entering locations: "
+        .asciiz "\nStart entering locations: \n"
 
 # ====================
 #    OTHER STRINGS 
@@ -117,11 +119,11 @@ d_a_loc:
 d_b_loc:
         .asciiz "\n B Coordinates: "
 
-rp:
+lp:
         .asciiz "("
 comma:
         .asciiz ", "
-lp:
+rp:
         .asciiz ")"
 
 # ====================
@@ -176,13 +178,15 @@ b_coordinates:
         .align      2
 
 param_block:
-        #   === 24 byte structure ===   #
+        #   === 32 byte structure ===   #
         .word       board_dim                       #0 offset
         .word       generations                     #4 offset
         .word       A_cells                         #8 offset
         .word       B_cells                         #12 offset
         .word       a_next                          #16 offset
         .word       b_next                          #20 offset
+        .word       a_coordinates                   #24 offset
+        .word       b_coordinates                   #28
 
 
 ###########################################
@@ -290,20 +294,24 @@ end_main:
 #                       - 4 offset -> y coordinate
 #
 # Parameters:
-#       a0 -        the array to print
+#       a0 -        the location of array to print
 #       a1 -        the size of the array
 #
 # T Registers:
 #       t0 -        loop counter
 #     
 # =========================================================
-print_array:
+print_locations:
         li      $t0, 0                              # i == 0
-        move    $t1, $a0                            # pointer
+        move    $t1, $a0                         # pointer
 
 print_loop:
-        beq     $t0, $a1, print_done                #done if i == n
+        beq     $t0, $a1, print_done                #done if i == n 
 
+        la      $a0, newline
+        li      $v0, PRINT_STRING                   #print \n
+        syscall
+        
         la      $a0, lp
         li      $v0, PRINT_STRING                   #print (
         syscall
@@ -312,7 +320,7 @@ print_loop:
         li      $v0, PRINT_INT
         syscall                                     #print a[i].x
 
-        la      $a0, lp
+        la      $a0, comma
         li      $v0, PRINT_STRING                   #print ,
         syscall
         
@@ -320,14 +328,9 @@ print_loop:
         li      $v0, PRINT_INT
         syscall                                     #print a[i].y
         
-        la      $a0, lp
+        la      $a0, rp
         li      $v0, PRINT_STRING                   #print )
         syscall
-
-        la      $a0, newline
-        li      $v0, PRINT_STRING                   #print \n
-        syscall
-        
         
         addi    $t1, $t1, 8                         #update pointer
         addi    $t0, $t0, 1                         #i++
@@ -364,7 +367,7 @@ debug_params:
         la      $a0, d_dim
         syscall
         li      $v0, PRINT_INT
-        lw      $a0, GEN_OFFSET($s0)
+        lw      $a0, DIM_OFFSET($s0)
         lw      $a0, 0($a0)
         syscall
 
@@ -393,9 +396,13 @@ debug_params:
         la      $a0, d_a_loc
         syscall
 
-        #la      $a0, a_x_coordinates       
-        #sw      $a1, _A_CELLS($s0)
-        #jal     print_array
+        #lw      $a0, A_ARRAY_OFFSET($s0)            #load addr of arr
+        #lw      $a0, 0($a0)
+        la      $a0, a_coordinates
+        #lw      $a0, 0($a0)
+        lw      $a1, A_OFFSET($s0)
+        lw      $a1, 0($a1)
+        jal     print_locations
 
 
         # print colony B size#
@@ -416,14 +423,14 @@ debug_params:
 
         #la      $a0, a_x_coordinates       
         #sw      $a1, _A_CELLS($s0)
-        #jal     print_array
+        #jal     print_locations
 
         li      $v0, PRINT_STRING
         la      $a0, newline
         syscall
         
-        sw      $ra, 4($sp)
-        sw      $s0, 0($sp)
+        lw      $ra, 4($sp)
+        lw      $s0, 0($sp)
         addi    $sp, $sp, 8
 
         jr      $ra
