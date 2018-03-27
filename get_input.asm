@@ -44,16 +44,34 @@ B_ARR = 28
 #                   the single integer parameters
 # Parameters:                         
 #       a0 -        the location where the input will be stored
+#       a1 -        the lower bound
+#       a2 -        the upper bound
+#       a3 -        the location of the error message
 # ===================================================================
 get_integer:
         addi    $sp, $sp, -8                       
         sw      $ra, 4($sp)
         sw      $s0, 0($sp)                         #store s register
 
-        move    $s0, $a0                            
         li      $v0, READ_INT                       #read int
         syscall        
-        sw      $v0, 0($s0)                         #store in variable
+        
+        slt     $t0, $v0, $a1                       #if(input < lower)
+        slt     $t1, $a2, $v0                       #if(input > upper
+        or      $t2, $t0, $t1                      
+        beq     $t2, $zero,integer_store
+        
+        move    $s0, $a0                            #save int addr
+        move    $a0, $a3                            
+        li      $v0, PRINT_STRING
+        syscall                                     #print error
+        move    $a0, $s0                            #restore int addr
+        j       get_integer
+        
+
+
+integer_store:
+        sw      $v0, 0($a0)                         #store in variable
 
         lw      $ra, 4($sp)
         lw      $s0, 0($sp)                         #restore s register 
@@ -68,6 +86,7 @@ get_integer:
 #                   
 # Parameters:                         
 #       a0 -        the parameter block
+#       a1 -        the location of the illegal string
 # S Registers:
 #       s0 -        the loop max (2xcells to place)
 #       s1 -        the loop counter
@@ -106,6 +125,10 @@ loc_loop_A:
         li      $v0, READ_INT
         syscall
         move    $t1, $v0
+
+        # check valid #
+        #slt     $t9, $t1, $zero                     #if(in < 0) set t9
+        #bne     $t9, $zero, get_col
 
         # get col coordinate # 
 

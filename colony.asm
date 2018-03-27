@@ -220,6 +220,9 @@ main:
         syscall
         
         la      $a0, board_dim 
+        li      $a1, 4
+        li      $a2, 30
+        la      $a3, illegal_size
         jal     get_integer
         
         # print and get generations #
@@ -229,6 +232,9 @@ main:
         syscall
         
         la      $a0, generations
+        li      $a1, 0
+        li      $a2, 20
+        la      $a3, illegal_gens
         jal     get_integer
 
         # print and get A colony size #
@@ -238,6 +244,11 @@ main:
         syscall
         
         la      $a0, A_cells
+        li      $a1, 0
+        la      $a2, board_dim
+        lw      $a2, 0($a2)
+        mul     $a2, $a2, $a2                       #dim^2
+        la      $a3, illegal_cells
         jal     get_integer
 
         # print and get A colony locations #
@@ -256,6 +267,11 @@ main:
         syscall
         
         la      $a0, B_cells
+        li      $a1, 0
+        la      $a2, board_dim
+        lw      $a2, 0($a2)
+        mul     $a2, $a2, $a2                       #dim^2
+        la      $a3, illegal_cells
         jal     get_integer
         
         # print and get B colony locations #
@@ -274,7 +290,7 @@ main:
 
 end_main:
         lw          $ra, -4+FRAMESIZE_48($sp)
-        addi        $sp, $sp, -FRAMESIZE_48
+        addi        $sp, $sp, FRAMESIZE_48
         jr          $ra
 
 
