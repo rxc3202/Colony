@@ -189,9 +189,13 @@ param_block:
         .word       a_coordinates                   #24 offset
         .word       b_coordinates                   #28 offset
 
-board_array:
+board_1:
         .space      900                             #30x30 char array
+        .align      2
         
+board_2:
+        .space      900                             #30x30 char array
+        .align      2
 
 ###########################################
 # ======================================= #
@@ -293,13 +297,166 @@ main:
         # == test input grabbing == #
         la      $a0, param_block
         jal     debug_params
+        
+
+        #set up board       
+        jal     setup_board
+        #jal     print_board
+        #jal     run_conway
 
 end_main:
         lw      $ra, -4+FRAMESIZE_48($sp)
         addi    $sp, $sp, FRAMESIZE_48
         jr      $ra
 
+# =========================================================
+# Name:             print_board 
+# =========================================================
+# Description:      print the board as a 2D array
+#                   
+#
+# Parameters:
+#       s0 -        the dim of the board
+#       s1 -        the pointer to the row to print
+#       s2 -        the addr ofthe array
+#
+# T Registers:
+#       t0 -        row loop flag
+#       t1 -        row loop counter
+#       t2 -        col loop counter
+#       t3 -        pointer for col in row
+#       t4 -        column loop flag
+#
+# =========================================================
 
+print_board: 
+        addi    $sp, $sp, -16 
+        sw      $ra, 12($sp)
+        sw      $s0, 8($sp)
+        sw      $s1, 4($sp)
+        lw      $s2, 0($sp)
+
+        # get board dim #
+
+        jal     get_board_dim
+        move    $s0, $v0
+
+        # get board space #
+
+        la      $s1, board_1
+        la      $s2, board_1
+
+        # calculate row to start at#
+
+        addi    $t1, $s0, -1                        # row = dim - 1
+        move    $t2, $zero                          # col = 0
+        
+print_row_loop:
+        slti    $t0, $t1, -1                        #while(row >= 0)
+        bne     $t0, $zero, print_board_end 
+
+        la      $a0, bar                            #print("|")
+        li      $v0, PRINT_STRING 
+        syscall
+
+        # calculate row address #
+        mul     $s1, $s0, 1                         # len_c = size(char) * dim
+        mul     $s1, $s1, $t1                       # offset = len_c * row
+        add     $s1, $s2, $s1                       # r_addr = base + offset
+        
+print_col_loop:
+        slt     $t4, $t2, $s0                       #while(col < dim)
+        beq     $t4, $zero, end_col_loop
+
+        move    $t3, $s1                            #load addr of arr[row][0]
+
+        mul     $t5, $t2, 1                         #sizeof(char)*col_index
+        add     $t3, $t3, $t5                       #row base + offset
+
+        lb      $a0, 0($t3)
+        li      $v0, PRINT_STRING
+        syscall                                     #print(arr[row][col])
+        
+        addi    $t2, $t2, 1                         #col++
+        j       print_col_loop
+
+end_col_loop:
+        
+        la      $a0, bar                            #print("|")
+        li      $v0, PRINT_STRING 
+        syscall
+
+        la      $a0, newline                       #print("\n")
+        li      $v0, PRINT_STRING 
+        syscall
+        
+        move    $t2, $zero                          # col = 0
+        addi    $t1, $t1, -1                        # row--
+        j       print_row_loop
+
+
+print_board_end:
+        lw      $ra, 12($sp)
+        lw      $s0, 8($sp)
+        lw      $s1, 4($sp)
+        lw      $s2, 0($sp)
+        addi    $sp, $sp, 16
+        jr      $ra
+        
+
+
+# =========================================================
+# Name:             setup_board
+# =========================================================
+# Description:      this fills the spots in the array with 
+#                   either an "A", "B", or " "(space)
+#
+# Parameters:
+#       - s0        the board dimension
+#       - s1        the pointer to pos in 2d array
+#       - s2        the addr of the end 2d array
+#
+# T Registers:
+#       - t2        addr of a_coordinates
+#       - t3        addr of b_coordinates
+#       - t9        pointer to curr in array
+#
+#
+# =========================================================
+setup_board:
+        addi    $sp, $sp, -16
+        sw      $ra, 12($sp)
+        sw      $s0, 8($sp)
+        sw      $s1, 4($sp)
+        sw      $s2, 0($sp)
+
+        jal     get_board_dim                       #get board dim
+        move    $s0, $v0
+        la      $s1, board_1                        #get board addr
+        #lw      $s1, 0($s1)
+    
+        mul     $t0, $s0, $s0                       #dim^2
+        add     $s2, $t0, $s1                       #pointer to end of array
+
+        li      $t1, 32                             #t1 = ascii " "
+load_blanks:
+        slt     $t0, $s2, $s1                       # i == dim; break
+        bne     $t0, $zero, fill_array
+        
+        sb      $t1, 0($s1)                         #arr[i] = ' ';
+
+        addi    $s1, $s1, 1                         #i++
+        j       load_blanks
+
+fill_array:
+
+setup_end:
+        lw      $ra, 12($sp)
+        lw      $s0, 8($sp)
+        lw      $s1, 4($sp)
+        lw      $s2, 0($sp)
+        addi    $sp, $sp, 16
+        jr      $ra
 
 ###########################################
 # ======================================= #
