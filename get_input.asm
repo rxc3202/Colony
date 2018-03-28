@@ -85,7 +85,7 @@ integer_store:
 #                   locations of the live cells for colony A
 #                   
 # Parameters:                         
-#       a0 -        the parameter block
+#       a0 -        addr the parameter block
 #       a1 -        the location of the illegal string
 # S Registers:
 #       s0 -        the loop max (2xcells to place)
@@ -107,6 +107,9 @@ get_A_cells:
         sw      $s1, -12+CELL_FRAMESIZE($sp)                       
         sw      $s2, -16+CELL_FRAMESIZE($sp)                       
         sw      $s3, -20+CELL_FRAMESIZE($sp)
+
+        lw      $t3, BOARD_DIM($a0)                 
+        lw      $t3, 0($t3)
         
         lw      $s0, A_CELLS($a0)                   #load addr of cell cnt
         lw      $s0, 0($s0)                         #load int inside addr 
@@ -126,15 +129,23 @@ loc_loop_A:
         syscall
         move    $t1, $v0
 
-        # check valid #
-        #slt     $t9, $t1, $zero                     #if(in < 0) set t9
-        #bne     $t9, $zero, get_col
-
         # get col coordinate # 
 
         li      $v0, READ_INT
         syscall
         move    $t2, $v0
+
+        # check valid x #
+        slt     $t9, $t1, $zero                     #if(in < 0) set t9
+        bne     $t9, $zero, get_A_error
+        slt     $t8, $t3, $t1                       #if(in > dim set t8
+        bne     $t8, $zero, get_A_error
+
+        # check valid y #
+        slt     $t9, $t2, $zero                     #if(in < 0) set t9
+        bne     $t9, $zero, get_A_error
+        slt     $t8, $t3, $t2                       #if(in > dim set t8
+        bne     $t8, $zero, get_A_error
 
         # place into array #                        # 2 values placed in
 
@@ -146,6 +157,13 @@ loc_loop_A:
 
         addi    $s1, $s1, 1
         j       loc_loop_A
+
+get_A_error:
+        move    $a0, $a1
+        li      $v0, PRINT_STRING
+        syscall
+        li      $v0, 10
+        syscall
 
 A_cells_end:
 
@@ -166,6 +184,7 @@ A_cells_end:
 #                   
 # Parameters:                         
 #       a0 -        the parameter block
+#       a1 -        the addr of error string
 # S Registers:
 #       s0 -        the loop max (2xcells to place)
 #       s1 -        the loop counter
@@ -184,6 +203,9 @@ get_B_cells:
         sw      $s1, -12+CELL_FRAMESIZE($sp)                       
         sw      $s2, -16+CELL_FRAMESIZE($sp)                       
         sw      $s3, -20+CELL_FRAMESIZE($sp)
+
+        lw      $t3, BOARD_DIM($a0)                 #get dim to compare
+        lw      $t3, 0($t3)
         
         lw      $s0, B_CELLS($a0)                   #load addr of cell cnt
         lw      $s0, 0($s0)                         #load int inside addr 
@@ -210,6 +232,18 @@ loc_loop_B:
         syscall
         move    $t2, $v0
 
+        # check valid x #
+        #slt     $t9, $t1, $zero                     #if(in < 0) set t9
+        #bne     $t9, $zero, get_B_error
+        #slt     $t8, $t3, $t1                       #if(in > dim set t8
+        #bne     $t8, $zero, get_B_error
+
+        # check valid y #
+        #slt     $t9, $t2, $zero                     #if(in < 0) set t9
+        #bne     $t9, $zero, get_B_error
+        #slt     $t8, $t3, $t2                       #if(in > dim set t8
+        #bne     $t8, $zero, get_B_error
+
         # place into array #                        # 2 values placed in
 
         sw      $t1, 0($s2)                         # 0($s2) = x value
@@ -219,6 +253,13 @@ loc_loop_B:
         # increment loop counter #
         addi    $s1, $s1, 1
         j       loc_loop_B
+
+get_B_error:
+        move    $a0, $a1
+        li      $v0, PRINT_STRING
+        syscall
+        li      $v0, 10
+        syscall
 
 B_cells_end:
 

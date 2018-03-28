@@ -95,7 +95,7 @@ illegal_cells:
         .asciiz "\nWARNING: illegal number of live cells, try again: "
 
 illegal_point:
-        .asciiz "\nWARNING: illegal point location: "
+        .asciiz "\nWARNING: illegal point location\n"
 
 # ====================
 #    DEBUG STRINGS  
@@ -258,6 +258,7 @@ main:
         syscall
         
         la      $a0, param_block
+        la      $a1, illegal_point
         jal     get_A_cells
 
         # print and get B colony size #
@@ -281,6 +282,7 @@ main:
         syscall
         
         la      $a0, param_block
+        la      $a1, illegal_point
         jal     get_B_cells
         
 
@@ -449,6 +451,5 @@ debug_params:
         lw      $ra, 4($sp)
         lw      $s0, 0($sp)
         addi    $sp, $sp, 8
-
         jr      $ra
 

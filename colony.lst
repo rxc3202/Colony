@@ -155,93 +155,94 @@
           6D626572
   96 01a9               
   97 01a9               illegal_point:
-  98 01a9 0A574152	        .asciiz "\nWARNING: illegal point location: "
+  98 01a9 0A574152	        .asciiz "\nWARNING: illegal point location\n"
           4E494E47
           3A20696C
           6C656761
           6C20706F
           696E7420
-  99 01cc               
- 100 01cc               # ====================
- 101 01cc               #    DEBUG STRINGS  
- 102 01cc               # ====================
- 103 01cc               
- 104 01cc               d_dim:
- 105 01cc 0A20426F	        .asciiz "\n Board Dimensions: "
+  99 01cb               
+ 100 01cb               # ====================
+ 101 01cb               #    DEBUG STRINGS  
+ 102 01cb               # ====================
+ 103 01cb               
+ 104 01cb               d_dim:
+ 105 01cb 0A20426F	        .asciiz "\n Board Dimensions: "
           61726420
           44696D65
           6E73696F
           6E733A20
           00      
- 106 01e1               
- 107 01e1               d_gen:
- 108 01e1 0A204765	        .asciiz "\n Generations: "
+ 106 01e0               
+ 107 01e0               d_gen:
+ 108 01e0 0A204765	        .asciiz "\n Generations: "
           6E657261
           74696F6E
           733A2000
- 109 01f1               
- 110 01f1               d_a_cells:
- 111 01f1 0A20436F	        .asciiz "\n Colony A Cells: "
+ 109 01f0               
+ 110 01f0               d_a_cells:
+ 111 01f0 0A20436F	        .asciiz "\n Colony A Cells: "
           6C6F6E79
           20412043
           656C6C73
           3A2000  
- 112 0204               
- 113 0204               d_b_cells:
- 114 0204 0A20436F	        .asciiz "\n Colony B Cells: "
+ 112 0203               
+ 113 0203               d_b_cells:
+ 114 0203 0A20436F	        .asciiz "\n Colony B Cells: "
           6C6F6E79
           20422043
           656C6C73
           3A2000  
- 115 0217               
- 116 0217               d_a_loc:
- 117 0217 0A204120	        .asciiz "\n A Coordinates: "
+ 115 0216               
+ 116 0216               d_a_loc:
+ 117 0216 0A204120	        .asciiz "\n A Coordinates: "
           436F6F72
           64696E61
           7465733A
           2000    
- 118 0229               
- 119 0229               d_b_loc:
- 120 0229 0A204220	        .asciiz "\n B Coordinates: "
+ 118 0228               
+ 119 0228               d_b_loc:
+ 120 0228 0A204220	        .asciiz "\n B Coordinates: "
           436F6F72
           64696E61
           7465733A
           2000    
- 121 023b               
- 122 023b               lp:
- 123 023b 2800    	        .asciiz "("
- 124 023d               comma:
- 125 023d 2C2000  	        .asciiz ", "
- 126 0240               rp:
- 127 0240 2900    	        .asciiz ")"
- 128 0242               
- 129 0242               # ====================
- 130 0242               #    BOARD STRINGS  
- 131 0242               # ====================
- 132 0242               
- 133 0242               plus:
- 134 0242 2B00    	        .asciiz "+"
- 135 0244               
- 136 0244               hyphen:
- 137 0244 2D00    	        .asciiz "-"
- 138 0246               
- 139 0246               bar:
- 140 0246 7C00    	        .asciiz "|"
- 141 0248               
- 142 0248               A:
- 143 0248 4100    	        .asciiz "A"
- 144 024a               B:
- 145 024a 4200    	        .asciiz "B"
- 146 024c               
- 147 024c               # ====================
- 148 024c               #     GAME BUFFERS
- 149 024c               # ====================
- 150 024c               # These addresses will hold the values read in by the user
- 151 024c               # if a negative one is detected in a register, the value will
- 152 024c               # be known to not be read in correctly
- 153 024c               
- 154 024c               board_dim:
- 155 024c FFFFFFFF	        .word       -1
+ 121 023a               
+ 122 023a               lp:
+ 123 023a 2800    	        .asciiz "("
+ 124 023c               comma:
+ 125 023c 2C2000  	        .asciiz ", "
+ 126 023f               rp:
+ 127 023f 2900    	        .asciiz ")"
+ 128 0241               
+ 129 0241               # ====================
+ 130 0241               #    BOARD STRINGS  
+ 131 0241               # ====================
+ 132 0241               
+ 133 0241               plus:
+ 134 0241 2B00    	        .asciiz "+"
+ 135 0243               
+ 136 0243               hyphen:
+ 137 0243 2D00    	        .asciiz "-"
+ 138 0245               
+ 139 0245               bar:
+ 140 0245 7C00    	        .asciiz "|"
+ 141 0247               
+ 142 0247               A:
+ 143 0247 4100    	        .asciiz "A"
+ 144 0249               B:
+ 145 0249 4200    	        .asciiz "B"
+ 146 024b               
+ 147 024b               # ====================
+ 148 024b               #     GAME BUFFERS
+ 149 024b               # ====================
+ 150 024b               # These addresses will hold the values read in by the user
+ 151 024b               # if a negative one is detected in a register, the value will
+ 152 024b               # be known to not be read in correctly
+ 153 024b               
+ 154 024b               board_dim:
+ 155 024b 00      	        .word       -1
+     024c FFFFFFFF
  156 0250               
  157 0250               generations:
  158 0250 FFFFFFFF	        .word       -1
@@ -371,229 +372,232 @@
  259 00bc                       
  260 00bc 3C040000	        la      $a0, param_block
      00c0 34840000
- 261 00c4 0C000000	        jal     get_A_cells
- 262 00c8               
- 263 00c8                       # print and get B colony size #
- 264 00c8               
- 265 00c8 34020004	        li      $v0, PRINT_STRING                    
- 266 00cc 3C040000	        la      $a0, live_cells_B
-     00d0 34840000
- 267 00d4 0000000C	        syscall
- 268 00d8                       
- 269 00d8 3C040000	        la      $a0, B_cells
-     00dc 34840000
- 270 00e0 34050000	        li      $a1, 0
- 271 00e4 3C060000	        la      $a2, board_dim
-     00e8 34C60000
- 272 00ec 8CC60000	        lw      $a2, 0($a2)
- 273 00f0 00C60018	        mul     $a2, $a2, $a2                       #dim^2
-     00f4 00003012
- 274 00f8 3C070000	        la      $a3, illegal_cells
-     00fc 34E70000
- 275 0100 0C000000	        jal     get_integer
- 276 0104                       
- 277 0104                       # print and get B colony locations #
- 278 0104               
- 279 0104 34020004	        li      $v0, PRINT_STRING                    
- 280 0108 3C040000	        la      $a0, enter_locations
-     010c 34840000
- 281 0110 0000000C	        syscall
- 282 0114                       
- 283 0114 3C040000	        la      $a0, param_block
-     0118 34840000
- 284 011c 0C000000	        jal     get_B_cells
- 285 0120                       
- 286 0120               
- 287 0120                       # == test input grabbing == #
- 288 0120 3C040000	        la      $a0, param_block
-     0124 34840000
- 289 0128 0C00006F	        jal     debug_params
- 290 012c               
- 291 012c               end_main:
- 292 012c 8FBF002C	        lw          $ra, -4+FRAMESIZE_48($sp)
- 293 0130 23BD0030	        addi        $sp, $sp, FRAMESIZE_48
- 294 0134 03E00008	        jr          $ra
- 295 0138               
- 296 0138               
- 297 0138               
- 298 0138               ###########################################
- 299 0138               # ======================================= #
- 300 0138               # ||        Helper Code                || #
- 301 0138               # ======================================= #
- 302 0138               ###########################################
- 303 0138               
- 304 0138               # =========================================================
- 305 0138               # Name:             print_locations
- 306 0138               # =========================================================
- 307 0138               # Description:      prints an array of location "structs"
- 308 0138               #                   each structure is 8 bytes long where:
- 309 0138               #                       - 0 -> x coordinate
- 310 0138               #                       - 4 offset -> y coordinate
- 311 0138               #
- 312 0138               # Parameters:
- 313 0138               #       a0 -        the location of array to print
- 314 0138               #       a1 -        the size of the array
- 315 0138               #
- 316 0138               # T Registers:
- 317 0138               #       t0 -        loop counter
- 318 0138               #     
- 319 0138               # =========================================================
- 320 0138               print_locations:
- 321 0138 34080000	        li      $t0, 0                              # i == 0
- 322 013c 00804821	        move    $t1, $a0                            # pointer
- 323 0140               
- 324 0140               print_loop:
- 325 0140 11050019	        beq     $t0, $a1, print_done                #done if i == n 
- 326 0144               
- 327 0144 3C040000	        la      $a0, newline
-     0148 34840000
- 328 014c 34020004	        li      $v0, PRINT_STRING                   #print \n
- 329 0150 0000000C	        syscall
- 330 0154                       
- 331 0154 3C040000	        la      $a0, lp
+ 261 00c4 3C050000	        la      $a1, illegal_point
+     00c8 34A50000
+ 262 00cc 0C000000	        jal     get_A_cells
+ 263 00d0               
+ 264 00d0                       # print and get B colony size #
+ 265 00d0               
+ 266 00d0 34020004	        li      $v0, PRINT_STRING                    
+ 267 00d4 3C040000	        la      $a0, live_cells_B
+     00d8 34840000
+ 268 00dc 0000000C	        syscall
+ 269 00e0                       
+ 270 00e0 3C040000	        la      $a0, B_cells
+     00e4 34840000
+ 271 00e8 34050000	        li      $a1, 0
+ 272 00ec 3C060000	        la      $a2, board_dim
+     00f0 34C60000
+ 273 00f4 8CC60000	        lw      $a2, 0($a2)
+ 274 00f8 00C60018	        mul     $a2, $a2, $a2                       #dim^2
+     00fc 00003012
+ 275 0100 3C070000	        la      $a3, illegal_cells
+     0104 34E70000
+ 276 0108 0C000000	        jal     get_integer
+ 277 010c                       
+ 278 010c                       # print and get B colony locations #
+ 279 010c               
+ 280 010c 34020004	        li      $v0, PRINT_STRING                    
+ 281 0110 3C040000	        la      $a0, enter_locations
+     0114 34840000
+ 282 0118 0000000C	        syscall
+ 283 011c                       
+ 284 011c 3C040000	        la      $a0, param_block
+     0120 34840000
+ 285 0124 3C050000	        la      $a1, illegal_point
+     0128 34A50000
+ 286 012c 0C000000	        jal     get_B_cells
+ 287 0130                       
+ 288 0130               
+ 289 0130                       # == test input grabbing == #
+ 290 0130 3C040000	        la      $a0, param_block
+     0134 34840000
+ 291 0138 0C000073	        jal     debug_params
+ 292 013c               
+ 293 013c               end_main:
+ 294 013c 8FBF002C	        lw          $ra, -4+FRAMESIZE_48($sp)
+ 295 0140 23BD0030	        addi        $sp, $sp, FRAMESIZE_48
+ 296 0144 03E00008	        jr          $ra
+ 297 0148               
+ 298 0148               
+ 299 0148               
+ 300 0148               ###########################################
+ 301 0148               # ======================================= #
+ 302 0148               # ||        Helper Code                || #
+ 303 0148               # ======================================= #
+ 304 0148               ###########################################
+ 305 0148               
+ 306 0148               # =========================================================
+ 307 0148               # Name:             print_locations
+ 308 0148               # =========================================================
+ 309 0148               # Description:      prints an array of location "structs"
+ 310 0148               #                   each structure is 8 bytes long where:
+ 311 0148               #                       - 0 -> x coordinate
+ 312 0148               #                       - 4 offset -> y coordinate
+ 313 0148               #
+ 314 0148               # Parameters:
+ 315 0148               #       a0 -        the location of array to print
+ 316 0148               #       a1 -        the size of the array
+ 317 0148               #
+ 318 0148               # T Registers:
+ 319 0148               #       t0 -        loop counter
+ 320 0148               #     
+ 321 0148               # =========================================================
+ 322 0148               print_locations:
+ 323 0148 34080000	        li      $t0, 0                              # i == 0
+ 324 014c 00804821	        move    $t1, $a0                            # pointer
+ 325 0150               
+ 326 0150               print_loop:
+ 327 0150 11050019	        beq     $t0, $a1, print_done                #done if i == n 
+ 328 0154               
+ 329 0154 3C040000	        la      $a0, newline
      0158 34840000
- 332 015c 34020004	        li      $v0, PRINT_STRING                   #print (
- 333 0160 0000000C	        syscall
- 334 0164                       
- 335 0164 8D240000	        lw      $a0, 0($t1)                         #get a[i].x
- 336 0168 34020001	        li      $v0, PRINT_INT
- 337 016c 0000000C	        syscall                                     #print a[i].x
- 338 0170               
- 339 0170 3C040000	        la      $a0, comma
-     0174 34840000
- 340 0178 34020004	        li      $v0, PRINT_STRING                   #print ,
- 341 017c 0000000C	        syscall
- 342 0180                       
- 343 0180 8D240004	        lw      $a0, 4($t1)                         #get a[i].y
- 344 0184 34020001	        li      $v0, PRINT_INT
- 345 0188 0000000C	        syscall                                     #print a[i].y
- 346 018c                       
- 347 018c 3C040000	        la      $a0, rp
-     0190 34840000
- 348 0194 34020004	        li      $v0, PRINT_STRING                   #print )
- 349 0198 0000000C	        syscall
- 350 019c                       
- 351 019c 21290008	        addi    $t1, $t1, 8                         #update pointer
- 352 01a0 21080001	        addi    $t0, $t0, 1                         #i++
- 353 01a4 08000050	        j       print_loop
- 354 01a8               
- 355 01a8               print_done:
- 356 01a8 3C040000	        la      $a0, newline
-     01ac 34840000
- 357 01b0 34020004	        li      $v0, PRINT_STRING
- 358 01b4 0000000C	        syscall
- 359 01b8                       
- 360 01b8 03E00008	        jr      $ra
- 361 01bc               
- 362 01bc               # =========================================================
- 363 01bc               # Name:             debug_params
- 364 01bc               # =========================================================
- 365 01bc               # Description:      print the inputs in the param block
- 366 01bc               #
- 367 01bc               # Parameters:
- 368 01bc               #       a0 -        the parameter block
- 369 01bc               # S Registers:
- 370 01bc               #       s0 -        the saved parameter block
- 371 01bc               # =========================================================
- 372 01bc               debug_params:
- 373 01bc                       
- 374 01bc 23BDFFF8	        addi    $sp, $sp, -8
- 375 01c0 AFBF0004	        sw      $ra, 4($sp)
- 376 01c4 AFB00000	        sw      $s0, 0($sp)
- 377 01c8                       
- 378 01c8 00808021	        move    $s0, $a0                            #save param block
- 379 01cc               
- 380 01cc                       # print board dimensions #
- 381 01cc               
- 382 01cc 34020004	        li      $v0, PRINT_STRING
- 383 01d0 3C040000	        la      $a0, d_dim
-     01d4 34840000
- 384 01d8 0000000C	        syscall
- 385 01dc 34020001	        li      $v0, PRINT_INT
- 386 01e0 8E040000	        lw      $a0, DIM_OFFSET($s0)
- 387 01e4 8C840000	        lw      $a0, 0($a0)
- 388 01e8 0000000C	        syscall
- 389 01ec               
- 390 01ec                       # print generations #
- 391 01ec               
- 392 01ec 34020004	        li      $v0, PRINT_STRING
- 393 01f0 3C040000	        la      $a0, d_gen
-     01f4 34840000
- 394 01f8 0000000C	        syscall
- 395 01fc 34020001	        li      $v0, PRINT_INT
- 396 0200 8E040004	        lw      $a0, GEN_OFFSET($s0)
- 397 0204 8C840000	        lw      $a0, 0($a0)                         #load val at 0(label)
- 398 0208 0000000C	        syscall
- 399 020c               
- 400 020c                       # print colony A size #
- 401 020c               
- 402 020c 34020004	        li      $v0, PRINT_STRING
- 403 0210 3C040000	        la      $a0, d_a_cells
-     0214 34840000
- 404 0218 0000000C	        syscall
- 405 021c 34020001	        li      $v0, PRINT_INT
- 406 0220 8E040008	        lw      $a0, A_OFFSET($s0)
- 407 0224 8C840000	        lw      $a0, 0($a0)                         #load val at 0(label)
- 408 0228 0000000C	        syscall
- 409 022c               
- 410 022c                       # print locations #
- 411 022c 34020004	        li      $v0, PRINT_STRING
- 412 0230 3C040000	        la      $a0, d_a_loc
-     0234 34840000
- 413 0238 0000000C	        syscall
- 414 023c               
- 415 023c                       #lw      $a0, A_ARRAY_OFFSET($s0)            #load addr of arr
- 416 023c                       #lw      $a0, 0($a0)
- 417 023c 3C040000	        la      $a0, a_coordinates
-     0240 34840000
- 418 0244                       #lw      $a0, 0($a0)
- 419 0244 8E050008	        lw      $a1, A_OFFSET($s0)
- 420 0248 8CA50000	        lw      $a1, 0($a1)
- 421 024c 0C00004E	        jal     print_locations
- 422 0250               
- 423 0250               
- 424 0250                       # print colony B size#
- 425 0250               
- 426 0250 34020004	        li      $v0, PRINT_STRING
- 427 0254 3C040000	        la      $a0, d_b_cells
-     0258 34840000
- 428 025c 0000000C	        syscall
- 429 0260               
- 430 0260 34020001	        li      $v0, PRINT_INT
- 431 0264 8E04000C	        lw      $a0, B_OFFSET($s0)
- 432 0268 8C840000	        lw      $a0, 0($a0)                         #load val at 0(label)
- 433 026c 0000000C	        syscall
- 434 0270               
- 435 0270                       # print locations#
- 436 0270 34020004	        li      $v0, PRINT_STRING
- 437 0274 3C040000	        la      $a0, d_b_loc
-     0278 34840000
- 438 027c 0000000C	        syscall
- 439 0280               
- 440 0280 3C040000	        la      $a0, b_coordinates                  #get addr of arr
-     0284 34840000
- 441 0288 8E05000C	        lw      $a1, B_OFFSET($s0)                  #get addr of size
- 442 028c 8CA50000	        lw      $a1, 0($a1)                         #get size
- 443 0290 0C00004E	        jal     print_locations
- 444 0294               
- 445 0294 34020004	        li      $v0, PRINT_STRING
- 446 0298 3C040000	        la      $a0, newline
-     029c 34840000
- 447 02a0 0000000C	        syscall
- 448 02a4                       
- 449 02a4 8FBF0004	        lw      $ra, 4($sp)
- 450 02a8 8FB00000	        lw      $s0, 0($sp)
- 451 02ac 23BD0008	        addi    $sp, $sp, 8
- 452 02b0               
- 453 02b0 03E00008	        jr      $ra
- 454 02b4               
+ 330 015c 34020004	        li      $v0, PRINT_STRING                   #print \n
+ 331 0160 0000000C	        syscall
+ 332 0164                       
+ 333 0164 3C040000	        la      $a0, lp
+     0168 34840000
+ 334 016c 34020004	        li      $v0, PRINT_STRING                   #print (
+ 335 0170 0000000C	        syscall
+ 336 0174                       
+ 337 0174 8D240000	        lw      $a0, 0($t1)                         #get a[i].x
+ 338 0178 34020001	        li      $v0, PRINT_INT
+ 339 017c 0000000C	        syscall                                     #print a[i].x
+ 340 0180               
+ 341 0180 3C040000	        la      $a0, comma
+     0184 34840000
+ 342 0188 34020004	        li      $v0, PRINT_STRING                   #print ,
+ 343 018c 0000000C	        syscall
+ 344 0190                       
+ 345 0190 8D240004	        lw      $a0, 4($t1)                         #get a[i].y
+ 346 0194 34020001	        li      $v0, PRINT_INT
+ 347 0198 0000000C	        syscall                                     #print a[i].y
+ 348 019c                       
+ 349 019c 3C040000	        la      $a0, rp
+     01a0 34840000
+ 350 01a4 34020004	        li      $v0, PRINT_STRING                   #print )
+ 351 01a8 0000000C	        syscall
+ 352 01ac                       
+ 353 01ac 21290008	        addi    $t1, $t1, 8                         #update pointer
+ 354 01b0 21080001	        addi    $t0, $t0, 1                         #i++
+ 355 01b4 08000054	        j       print_loop
+ 356 01b8               
+ 357 01b8               print_done:
+ 358 01b8 3C040000	        la      $a0, newline
+     01bc 34840000
+ 359 01c0 34020004	        li      $v0, PRINT_STRING
+ 360 01c4 0000000C	        syscall
+ 361 01c8                       
+ 362 01c8 03E00008	        jr      $ra
+ 363 01cc               
+ 364 01cc               # =========================================================
+ 365 01cc               # Name:             debug_params
+ 366 01cc               # =========================================================
+ 367 01cc               # Description:      print the inputs in the param block
+ 368 01cc               #
+ 369 01cc               # Parameters:
+ 370 01cc               #       a0 -        the parameter block
+ 371 01cc               # S Registers:
+ 372 01cc               #       s0 -        the saved parameter block
+ 373 01cc               # =========================================================
+ 374 01cc               debug_params:
+ 375 01cc                       
+ 376 01cc 23BDFFF8	        addi    $sp, $sp, -8
+ 377 01d0 AFBF0004	        sw      $ra, 4($sp)
+ 378 01d4 AFB00000	        sw      $s0, 0($sp)
+ 379 01d8                       
+ 380 01d8 00808021	        move    $s0, $a0                            #save param block
+ 381 01dc               
+ 382 01dc                       # print board dimensions #
+ 383 01dc               
+ 384 01dc 34020004	        li      $v0, PRINT_STRING
+ 385 01e0 3C040000	        la      $a0, d_dim
+     01e4 34840000
+ 386 01e8 0000000C	        syscall
+ 387 01ec 34020001	        li      $v0, PRINT_INT
+ 388 01f0 8E040000	        lw      $a0, DIM_OFFSET($s0)
+ 389 01f4 8C840000	        lw      $a0, 0($a0)
+ 390 01f8 0000000C	        syscall
+ 391 01fc               
+ 392 01fc                       # print generations #
+ 393 01fc               
+ 394 01fc 34020004	        li      $v0, PRINT_STRING
+ 395 0200 3C040000	        la      $a0, d_gen
+     0204 34840000
+ 396 0208 0000000C	        syscall
+ 397 020c 34020001	        li      $v0, PRINT_INT
+ 398 0210 8E040004	        lw      $a0, GEN_OFFSET($s0)
+ 399 0214 8C840000	        lw      $a0, 0($a0)                         #load val at 0(label)
+ 400 0218 0000000C	        syscall
+ 401 021c               
+ 402 021c                       # print colony A size #
+ 403 021c               
+ 404 021c 34020004	        li      $v0, PRINT_STRING
+ 405 0220 3C040000	        la      $a0, d_a_cells
+     0224 34840000
+ 406 0228 0000000C	        syscall
+ 407 022c 34020001	        li      $v0, PRINT_INT
+ 408 0230 8E040008	        lw      $a0, A_OFFSET($s0)
+ 409 0234 8C840000	        lw      $a0, 0($a0)                         #load val at 0(label)
+ 410 0238 0000000C	        syscall
+ 411 023c               
+ 412 023c                       # print locations #
+ 413 023c 34020004	        li      $v0, PRINT_STRING
+ 414 0240 3C040000	        la      $a0, d_a_loc
+     0244 34840000
+ 415 0248 0000000C	        syscall
+ 416 024c               
+ 417 024c                       #lw      $a0, A_ARRAY_OFFSET($s0)            #load addr of arr
+ 418 024c                       #lw      $a0, 0($a0)
+ 419 024c 3C040000	        la      $a0, a_coordinates
+     0250 34840000
+ 420 0254                       #lw      $a0, 0($a0)
+ 421 0254 8E050008	        lw      $a1, A_OFFSET($s0)
+ 422 0258 8CA50000	        lw      $a1, 0($a1)
+ 423 025c 0C000052	        jal     print_locations
+ 424 0260               
+ 425 0260               
+ 426 0260                       # print colony B size#
+ 427 0260               
+ 428 0260 34020004	        li      $v0, PRINT_STRING
+ 429 0264 3C040000	        la      $a0, d_b_cells
+     0268 34840000
+ 430 026c 0000000C	        syscall
+ 431 0270               
+ 432 0270 34020001	        li      $v0, PRINT_INT
+ 433 0274 8E04000C	        lw      $a0, B_OFFSET($s0)
+ 434 0278 8C840000	        lw      $a0, 0($a0)                         #load val at 0(label)
+ 435 027c 0000000C	        syscall
+ 436 0280               
+ 437 0280                       # print locations#
+ 438 0280 34020004	        li      $v0, PRINT_STRING
+ 439 0284 3C040000	        la      $a0, d_b_loc
+     0288 34840000
+ 440 028c 0000000C	        syscall
+ 441 0290               
+ 442 0290 3C040000	        la      $a0, b_coordinates                  #get addr of arr
+     0294 34840000
+ 443 0298 8E05000C	        lw      $a1, B_OFFSET($s0)                  #get addr of size
+ 444 029c 8CA50000	        lw      $a1, 0($a1)                         #get size
+ 445 02a0 0C000052	        jal     print_locations
+ 446 02a4               
+ 447 02a4 34020004	        li      $v0, PRINT_STRING
+ 448 02a8 3C040000	        la      $a0, newline
+     02ac 34840000
+ 449 02b0 0000000C	        syscall
+ 450 02b4                       
+ 451 02b4 8FBF0004	        lw      $ra, 4($sp)
+ 452 02b8 8FB00000	        lw      $s0, 0($sp)
+ 453 02bc 23BD0008	        addi    $sp, $sp, 8
+ 454 02c0 03E00008	        jr      $ra
+ 455 02c4               
 
 
-A                    00000248 R  data 
+A                    00000247 R  data 
 A_ARRAY_OFFSET     = 00000018   
 A_OFFSET           = 00000008   
 A_cells              00000254 R  data 
-B                    0000024A R  data 
+B                    00000249 R  data 
 B_ARRAY_OFFSET     = 0000001C   
 B_OFFSET           = 0000000C   
 B_cells              00000258 R  data 
@@ -614,17 +618,17 @@ a_next               0000025C R  data
 b_coordinates        00001E84 R  data 
 b_next               00001E80 R  data 
 banner               000000AD R  data 
-bar                  00000246 R  data 
+bar                  00000245 R  data 
 board_dim            0000024C R  data 
-comma                0000023D R  data 
-d_a_cells            000001F1 R  data 
-d_a_loc              00000217 R  data 
-d_b_cells            00000204 R  data 
-d_b_loc              00000229 R  data 
-d_dim                000001CC R  data 
-d_gen                000001E1 R  data 
-debug_params         000001BC R  text 
-end_main             0000012C R  text 
+comma                0000023C R  data 
+d_a_cells            000001F0 R  data 
+d_a_loc              00000216 R  data 
+d_b_cells            00000203 R  data 
+d_b_loc              00000228 R  data 
+d_dim                000001CB R  data 
+d_gen                000001E0 R  data 
+debug_params         000001CC R  text 
+end_main             0000013C R  text 
 enter_board_size     00000000 R  data 
 enter_generations    00000014 R  data 
 enter_locations      00000090 R  data 
@@ -634,20 +638,20 @@ generations          00000250 R  data
 get_A_cells          ******** XG
 get_B_cells          ******** XG
 get_integer          ******** XG
-hyphen               00000244 R  data 
+hyphen               00000243 R  data 
 illegal_cells        00000175 R  data 
 illegal_gens         00000140 R  data 
 illegal_point        000001A9 R  data 
 illegal_size         00000116 R  data 
 live_cells_A         0000003A R  data 
 live_cells_B         00000065 R  data 
-lp                   0000023B R  data 
+lp                   0000023A R  data 
 main                 00000000 RG text 
 newline              00000112 R  data 
 param_block          00003AA4 R  data 
-plus                 00000242 R  data 
-print_done           000001A8 R  text 
-print_locations      00000138 R  text 
-print_loop           00000140 R  text 
-rp                   00000240 R  data 
+plus                 00000241 R  data 
+print_done           000001B8 R  text 
+print_locations      00000148 R  text 
+print_loop           00000150 R  text 
+rp                   0000023F R  data 
 space                00000114 R  data 
