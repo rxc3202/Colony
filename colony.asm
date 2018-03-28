@@ -177,8 +177,9 @@ b_coordinates:
         .space      7200                            #space for 300 y's
         .align      2
 
-param_block:
         #   === 32 byte structure ===   #
+
+param_block:
         .word       board_dim                       #0 offset
         .word       generations                     #4 offset
         .word       A_cells                         #8 offset
@@ -186,8 +187,11 @@ param_block:
         .word       a_next                          #16 offset
         .word       b_next                          #20 offset
         .word       a_coordinates                   #24 offset
-        .word       b_coordinates                   #28
+        .word       b_coordinates                   #28 offset
 
+board_array:
+        .space      900                             #30x30 char array
+        
 
 ###########################################
 # ======================================= #
@@ -291,9 +295,9 @@ main:
         jal     debug_params
 
 end_main:
-        lw          $ra, -4+FRAMESIZE_48($sp)
-        addi        $sp, $sp, FRAMESIZE_48
-        jr          $ra
+        lw      $ra, -4+FRAMESIZE_48($sp)
+        addi    $sp, $sp, FRAMESIZE_48
+        jr      $ra
 
 
 
@@ -302,6 +306,27 @@ end_main:
 # ||        Helper Code                || #
 # ======================================= #
 ###########################################
+
+get_board_dim:
+        la      $t0, board_dim
+        lw      $v0, 0($t0)
+        jr      $ra
+
+get_generations:
+        la      $t0, generations
+        lw      $v0, 0($t0)
+        jr      $ra
+
+get_a:
+        la      $t0, A_cells
+        lw      $v0, 0($t0)
+        jr      $ra
+
+get_b:
+        la      $t0, B_cells
+        lw      $v0, 0($t0)
+        jr      $ra
+
 
 # =========================================================
 # Name:             print_locations
@@ -319,6 +344,7 @@ end_main:
 #       t0 -        loop counter
 #     
 # =========================================================
+
 print_locations:
         li      $t0, 0                              # i == 0
         move    $t1, $a0                            # pointer
@@ -371,6 +397,7 @@ print_done:
 # S Registers:
 #       s0 -        the saved parameter block
 # =========================================================
+
 debug_params:
         
         addi    $sp, $sp, -8
@@ -384,9 +411,10 @@ debug_params:
         li      $v0, PRINT_STRING
         la      $a0, d_dim
         syscall
-        li      $v0, PRINT_INT
-        lw      $a0, DIM_OFFSET($s0)
-        lw      $a0, 0($a0)
+
+        jal     get_board_dim                       #get the value of board dim
+        move    $a0, $v0
+        li      $v0, PRINT_INT                      #print board dim
         syscall
 
         # print generations #
@@ -394,9 +422,9 @@ debug_params:
         li      $v0, PRINT_STRING
         la      $a0, d_gen
         syscall
-        li      $v0, PRINT_INT
-        lw      $a0, GEN_OFFSET($s0)
-        lw      $a0, 0($a0)                         #load val at 0(label)
+        jal     get_generations                     #value of generations
+        move    $a0, $v0
+        li      $v0, PRINT_INT                      #print generations
         syscall
 
         # print colony A size #
@@ -404,9 +432,9 @@ debug_params:
         li      $v0, PRINT_STRING
         la      $a0, d_a_cells
         syscall
-        li      $v0, PRINT_INT
-        lw      $a0, A_OFFSET($s0)
-        lw      $a0, 0($a0)                         #load val at 0(label)
+        jal     get_a                               #get size a
+        move    $a0, $v0
+        li      $v0, PRINT_INT                      #print size of a
         syscall
 
         # print locations #
@@ -414,12 +442,9 @@ debug_params:
         la      $a0, d_a_loc
         syscall
 
-        #lw      $a0, A_ARRAY_OFFSET($s0)            #load addr of arr
-        #lw      $a0, 0($a0)
         la      $a0, a_coordinates
-        #lw      $a0, 0($a0)
-        lw      $a1, A_OFFSET($s0)
-        lw      $a1, 0($a1)
+        jal     get_a                               #get size a
+        move    $a1, $v0
         jal     print_locations
 
 
@@ -428,10 +453,9 @@ debug_params:
         li      $v0, PRINT_STRING
         la      $a0, d_b_cells
         syscall
-
-        li      $v0, PRINT_INT
-        lw      $a0, B_OFFSET($s0)
-        lw      $a0, 0($a0)                         #load val at 0(label)
+        jal     get_b                               #get size b
+        move    $a0, $v0
+        li      $v0, PRINT_INT                      #print it
         syscall
 
         # print locations#
@@ -440,8 +464,8 @@ debug_params:
         syscall
 
         la      $a0, b_coordinates                  #get addr of arr
-        lw      $a1, B_OFFSET($s0)                  #get addr of size
-        lw      $a1, 0($a1)                         #get size
+        jal     get_b                               #get size b
+        move    $a1, $v0
         jal     print_locations
 
         li      $v0, PRINT_STRING
