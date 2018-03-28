@@ -233,16 +233,16 @@ loc_loop_B:
         move    $t2, $v0
 
         # check valid x #
-        #slt     $t9, $t1, $zero                     #if(in < 0) set t9
-        #bne     $t9, $zero, get_B_error
-        #slt     $t8, $t3, $t1                       #if(in > dim set t8
-        #bne     $t8, $zero, get_B_error
+        slt     $t9, $t1, $zero                     #if(in < 0) set t9
+        bne     $t9, $zero, get_B_error
+        slt     $t8, $t3, $t1                       #if(in > dim set t8
+        bne     $t8, $zero, get_B_error
 
         # check valid y #
-        #slt     $t9, $t2, $zero                     #if(in < 0) set t9
-        #bne     $t9, $zero, get_B_error
-        #slt     $t8, $t3, $t2                       #if(in > dim set t8
-        #bne     $t8, $zero, get_B_error
+        slt     $t9, $t2, $zero                     #if(in < 0) set t9
+        bne     $t9, $zero, get_B_error
+        slt     $t8, $t3, $t2                       #if(in > dim set t8
+        bne     $t8, $zero, get_B_error
 
         # place into array #                        # 2 values placed in
 

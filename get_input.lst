@@ -218,7 +218,7 @@
  218 013c               
  219 013c               loc_loop_B:
  220 013c 0230402A	        slt     $t0, $s1, $s0
- 221 0140 11000010	        beq     $t0, $zero, B_cells_end
+ 221 0140 11000018	        beq     $t0, $zero, B_cells_end
  222 0144                       
  223 0144                       # get row coordinate # 
  224 0144               
@@ -233,44 +233,44 @@
  233 0158 00405021	        move    $t2, $v0
  234 015c               
  235 015c                       # check valid x #
- 236 015c                       #slt     $t9, $t1, $zero                     #if(in < 0) set t9
- 237 015c                       #bne     $t9, $zero, get_B_error
- 238 015c                       #slt     $t8, $t3, $t1                       #if(in > dim set t8
- 239 015c                       #bne     $t8, $zero, get_B_error
- 240 015c               
- 241 015c                       # check valid y #
- 242 015c                       #slt     $t9, $t2, $zero                     #if(in < 0) set t9
- 243 015c                       #bne     $t9, $zero, get_B_error
- 244 015c                       #slt     $t8, $t3, $t2                       #if(in > dim set t8
- 245 015c                       #bne     $t8, $zero, get_B_error
- 246 015c               
- 247 015c                       # place into array #                        # 2 values placed in
- 248 015c               
- 249 015c AE490000	        sw      $t1, 0($s2)                         # 0($s2) = x value
- 250 0160 AE4A0004	        sw      $t2, 4($s2)                         # 4($s2) = y value
- 251 0164 22520008	        addi    $s2, $s2, 8                         # increment pointer
- 252 0168               
- 253 0168                       # increment loop counter #
- 254 0168 22310001	        addi    $s1, $s1, 1
- 255 016c 0800004F	        j       loc_loop_B
- 256 0170               
- 257 0170               get_B_error:
- 258 0170 00A02021	        move    $a0, $a1
- 259 0174 34020004	        li      $v0, PRINT_STRING
- 260 0178 0000000C	        syscall
- 261 017c 3402000A	        li      $v0, 10
- 262 0180 0000000C	        syscall
- 263 0184               
- 264 0184               B_cells_end:
- 265 0184               
- 266 0184 8FBF0014	        lw      $ra, -4+CELL_FRAMESIZE($sp)
- 267 0188 8FB00010	        lw      $s0, -8+CELL_FRAMESIZE($sp)       
- 268 018c 8FB1000C	        lw      $s1, -12+CELL_FRAMESIZE($sp)                       
- 269 0190 8FB20008	        lw      $s2, -16+CELL_FRAMESIZE($sp)                       
- 270 0194 8FB30004	        lw      $s3, -20+CELL_FRAMESIZE($sp)
- 271 0198 23BD0018	        addi    $sp, $sp, CELL_FRAMESIZE
- 272 019c 03E00008	        jr      $ra
- 273 01a0               
+ 236 015c 0120C82A	        slt     $t9, $t1, $zero                     #if(in < 0) set t9
+ 237 0160 1720000B	        bne     $t9, $zero, get_B_error
+ 238 0164 0169C02A	        slt     $t8, $t3, $t1                       #if(in > dim set t8
+ 239 0168 17000009	        bne     $t8, $zero, get_B_error
+ 240 016c               
+ 241 016c                       # check valid y #
+ 242 016c 0140C82A	        slt     $t9, $t2, $zero                     #if(in < 0) set t9
+ 243 0170 17200007	        bne     $t9, $zero, get_B_error
+ 244 0174 016AC02A	        slt     $t8, $t3, $t2                       #if(in > dim set t8
+ 245 0178 17000005	        bne     $t8, $zero, get_B_error
+ 246 017c               
+ 247 017c                       # place into array #                        # 2 values placed in
+ 248 017c               
+ 249 017c AE490000	        sw      $t1, 0($s2)                         # 0($s2) = x value
+ 250 0180 AE4A0004	        sw      $t2, 4($s2)                         # 4($s2) = y value
+ 251 0184 22520008	        addi    $s2, $s2, 8                         # increment pointer
+ 252 0188               
+ 253 0188                       # increment loop counter #
+ 254 0188 22310001	        addi    $s1, $s1, 1
+ 255 018c 0800004F	        j       loc_loop_B
+ 256 0190               
+ 257 0190               get_B_error:
+ 258 0190 00A02021	        move    $a0, $a1
+ 259 0194 34020004	        li      $v0, PRINT_STRING
+ 260 0198 0000000C	        syscall
+ 261 019c 3402000A	        li      $v0, 10
+ 262 01a0 0000000C	        syscall
+ 263 01a4               
+ 264 01a4               B_cells_end:
+ 265 01a4               
+ 266 01a4 8FBF0014	        lw      $ra, -4+CELL_FRAMESIZE($sp)
+ 267 01a8 8FB00010	        lw      $s0, -8+CELL_FRAMESIZE($sp)       
+ 268 01ac 8FB1000C	        lw      $s1, -12+CELL_FRAMESIZE($sp)                       
+ 269 01b0 8FB20008	        lw      $s2, -16+CELL_FRAMESIZE($sp)                       
+ 270 01b4 8FB30004	        lw      $s3, -20+CELL_FRAMESIZE($sp)
+ 271 01b8 23BD0018	        addi    $sp, $sp, CELL_FRAMESIZE
+ 272 01bc 03E00008	        jr      $ra
+ 273 01c0               
 
 
 A_ARR           = 00000018   
@@ -279,7 +279,7 @@ A_cells_end       000000EC R  text
 BOARD_DIM       = 00000000   
 B_ARR           = 0000001C   
 B_CELLS         = 0000000C   
-B_cells_end       00000184 R  text 
+B_cells_end       000001A4 R  text 
 CELL_FRAMESIZE  = 00000018   
 GENS            = 00000004   
 NEXT_A          = 00000010   
@@ -291,7 +291,7 @@ READ_STRING     = 00000008
 get_A_cells       00000050 RG text 
 get_A_error       000000D8 R  text 
 get_B_cells       00000108 RG text 
-get_B_error       00000170 R  text 
+get_B_error       00000190 R  text 
 get_integer       00000000 RG text 
 integer_store     0000003C R  text 
 loc_loop_A        00000084 R  text 

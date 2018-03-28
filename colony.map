@@ -67,18 +67,18 @@ Module:  colony.obj
        illegal_size   Data   R   0x10000116
 
 Module:  get_input.obj
- Text segment:  416 bytes, load point 0x004002c4
+ Text segment:  448 bytes, load point 0x004002c4
  Symbols:
                Name Section Mode    Value
             B_CELLS          A   0x0000000c
-        B_cells_end   Text   R   0x00400448
+        B_cells_end   Text   R   0x00400468
               A_ARR          A   0x00000018
         get_A_cells   Text   RG  0x00400314
         A_cells_end   Text   R   0x004003b0
            READ_INT          A   0x00000005
           BOARD_DIM          A   0x00000000
      CELL_FRAMESIZE          A   0x00000018
-        get_B_error   Text   R   0x00400434
+        get_B_error   Text   R   0x00400454
       integer_store   Text   R   0x00400300
               B_ARR          A   0x0000001c
          loc_loop_A   Text   R   0x00400348
@@ -95,8 +95,8 @@ Module:  get_input.obj
           PRINT_INT          A   0x00000001
 
 Module:  r2k_startup.obj
- Text segment:  36 bytes, load point 0x00400464
+ Text segment:  36 bytes, load point 0x00400484
  Symbols:
                Name Section Mode    Value
           SYS_EXIT2          A   0x00000011
-     __r2k__entry__   Text   RG  0x00400468
+     __r2k__entry__   Text   RG  0x00400488
