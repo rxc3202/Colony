@@ -30,6 +30,7 @@ PRINT_INT =	1
 PRINT_STRING = 	4
 READ_INT = 	5
 READ_STRING =	8
+PRINT_CHAR = 11 
 
 # various frame sizes used by different routines
 
@@ -293,13 +294,16 @@ main:
         la      $a1, illegal_point
         jal     get_B_cells
         
-
         # == test input grabbing == #
+
         la      $a0, param_block
         jal     debug_params
-        
-#set up board       
+
+        # == set up board == #
+
+        la      $a0, board_1
         jal     setup_board
+        la      $a0, board_1
         jal     print_board
         #jal     run_conway
 
@@ -313,6 +317,8 @@ end_main:
 # =========================================================
 # Description:      print the board as a 2D array
 #                   
+# Parameters:
+#       a0 -        the addr of the board to print
 #
 # Parameters:
 #       s0 -        the dim of the board
@@ -335,6 +341,9 @@ print_board:
         sw      $s1, 4($sp)
         lw      $s2, 0($sp)
 
+        move     $s1, $a0 
+        move     $s2, $a0 
+
         # print top of board #
         jal     print_top_bottom
 
@@ -343,11 +352,6 @@ print_board:
         jal     get_board_dim
         move    $s0, $v0
 
-        # get board space #
-
-        la      $s1, board_1
-        la      $s2, board_1
-
         # calculate row to start at#
 
         addi    $t1, $s0, -1                        # row = dim - 1
@@ -355,9 +359,8 @@ print_board:
 
         
 print_row_loop:
-        slt     $t0, $t1, $zero                      #while(row >= 0)
+        slt     $t0, $t1, $zero                     #while(row >= 0)
         bne     $t0, $zero, print_board_end 
-
         la      $a0, bar                            #print("|")
         li      $v0, PRINT_STRING 
         syscall
@@ -377,7 +380,7 @@ print_col_loop:
         add     $t3, $t3, $t5                       #row base + offset
 
         lb      $a0, 0($t3)
-        li      $v0, 11
+        li      $v0, PRINT_CHAR
         syscall                                     #print(arr[row][col])
         
         addi    $t2, $t2, 1                         #col++
@@ -417,6 +420,7 @@ print_board_end:
 #       t0  -       loop counter
 #       t1  -       board dimension
 # =========================================================
+
 print_top_bottom:
         addi    $sp, $sp, -4
         sw      $ra, 0($sp)
@@ -462,6 +466,8 @@ tb_end:
 # Description:      this fills the spots in the array with 
 #                   either an "A", "B", or " "(space)
 #
+# Parameters:
+#       - a0        location of board to set up
 # S Registers:
 #       - s0        the board dimension
 #       - s1        the pointer to pos in 2d array
@@ -472,6 +478,7 @@ tb_end:
 #       - t3        addr of b_coordinates
 #       - t9        pointer to curr in array
 # =========================================================
+
 setup_board:
         addi    $sp, $sp, -16
         sw      $ra, 12($sp)
@@ -481,8 +488,8 @@ setup_board:
 
         jal     get_board_dim                       #get board dim
         move    $s0, $v0
-        la      $s1, board_1                        #get board addr
-        #lw      $s1, 0($s1)
+        #la      $s1, board_1                        #get board addr
+        move    $s1, $a0
     
         mul     $t0, $s0, $s0                       #dim^2
         add     $s2, $t0, $s1                       #pointer to end of array
