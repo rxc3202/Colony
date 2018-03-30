@@ -298,10 +298,9 @@ main:
         la      $a0, param_block
         jal     debug_params
         
-
-        #set up board       
+#set up board       
         jal     setup_board
-        #jal     print_board
+        jal     print_board
         #jal     run_conway
 
 end_main:
@@ -352,7 +351,7 @@ print_board:
         move    $t2, $zero                          # col = 0
         
 print_row_loop:
-        slti    $t0, $t1, -1                        #while(row >= 0)
+        slt    $t0, $t1, $zero                      #while(row >= 0)
         bne     $t0, $zero, print_board_end 
 
         la      $a0, bar                            #print("|")
@@ -374,7 +373,7 @@ print_col_loop:
         add     $t3, $t3, $t5                       #row base + offset
 
         lb      $a0, 0($t3)
-        li      $v0, PRINT_STRING
+        li      $v0, 11
         syscall                                     #print(arr[row][col])
         
         addi    $t2, $t2, 1                         #col++
