@@ -133,7 +133,7 @@ rp:
 plus:
         .asciiz "+"
 
-hyphen:
+minus:
         .asciiz "-"
 
 bar:
@@ -323,7 +323,7 @@ end_main:
 #       t0 -        row loop flag
 #       t1 -        row loop counter
 #       t2 -        col loop counter
-#       t3 -        pointer for col in row
+#       t3 -        pointer for col in row / banner counter
 #       t4 -        column loop flag
 #
 # =========================================================
@@ -334,6 +334,9 @@ print_board:
         sw      $s0, 8($sp)
         sw      $s1, 4($sp)
         lw      $s2, 0($sp)
+
+        # print top of board #
+        jal     print_top_bottom
 
         # get board dim #
 
@@ -349,9 +352,10 @@ print_board:
 
         addi    $t1, $s0, -1                        # row = dim - 1
         move    $t2, $zero                          # col = 0
+
         
 print_row_loop:
-        slt    $t0, $t1, $zero                      #while(row >= 0)
+        slt     $t0, $t1, $zero                      #while(row >= 0)
         bne     $t0, $zero, print_board_end 
 
         la      $a0, bar                            #print("|")
@@ -395,13 +399,61 @@ end_col_loop:
 
 
 print_board_end:
+        jal     print_top_bottom                    #print bottom board
+
         lw      $ra, 12($sp)
         lw      $s0, 8($sp)
         lw      $s1, 4($sp)
         lw      $s2, 0($sp)
         addi    $sp, $sp, 16
         jr      $ra
+
+# =========================================================
+# Name:             print_top_bottom
+# =========================================================
+# Description:      this prints the top banner of the board
+#
+# T Registers:
+#       t0  -       loop counter
+#       t1  -       board dimension
+# =========================================================
+print_top_bottom:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         
+        jal     get_board_dim
+        move    $t1, $v0
+
+        la      $a0, plus                           #print("+")
+        li      $v0, PRINT_STRING 
+        syscall
+
+        move    $t0, $zero
+        
+tb_loop:
+        slt     $t3, $t0, $t1                       #while(i < dim)
+        beq     $t3, $zero, tb_end
+
+        la      $a0, minus                          #print("-")
+        li      $v0, PRINT_STRING 
+        syscall
+        
+        addi    $t0, $t0, 1
+        j       tb_loop
+tb_end:
+
+        la      $a0, plus                           #print("+")
+        li      $v0, PRINT_STRING 
+        syscall
+
+        la      $a0, newline                        #print("\n")
+        li      $v0, PRINT_STRING 
+        syscall
+        
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
+        jr      $ra
 
 
 # =========================================================
@@ -410,7 +462,7 @@ print_board_end:
 # Description:      this fills the spots in the array with 
 #                   either an "A", "B", or " "(space)
 #
-# Parameters:
+# S Registers:
 #       - s0        the board dimension
 #       - s1        the pointer to pos in 2d array
 #       - s2        the addr of the end 2d array
@@ -419,8 +471,6 @@ print_board_end:
 #       - t2        addr of a_coordinates
 #       - t3        addr of b_coordinates
 #       - t9        pointer to curr in array
-#
-#
 # =========================================================
 setup_board:
         addi    $sp, $sp, -16
