@@ -33,6 +33,12 @@ READ_STRING =	8
 PRINT_CHAR = 11 
 
 # various frame sizes used by different routines
+REGISTER_1 = 8
+REGISTERS_2 = 12
+REGISTERS_3 = 16
+REGISTERS_4 = 20
+REGISTERS_5 = 24
+REGISTERS_6 = 28
 
 FRAMESIZE_8 = 	8
 FRAMESIZE_24 =	24
@@ -345,6 +351,7 @@ print_board:
         move     $s2, $a0 
 
         # print top of board #
+
         jal     print_top_bottom
 
         # get board dim #
@@ -488,13 +495,13 @@ setup_board:
 
         jal     get_board_dim                       #get board dim
         move    $s0, $v0
-        #la      $s1, board_1                        #get board addr
         move    $s1, $a0
     
         mul     $t0, $s0, $s0                       #dim^2
         add     $s2, $t0, $s1                       #pointer to end of array
 
         li      $t1, 32                             #t1 = ascii " "
+
 load_blanks:
         slt     $t0, $s2, $s1                       # i == dim; break
         bne     $t0, $zero, fill_array
@@ -505,6 +512,8 @@ load_blanks:
         j       load_blanks
 
 fill_array:
+        jal     fill_positions
+        
 
 setup_end:
         lw      $ra, 12($sp)
@@ -512,6 +521,96 @@ setup_end:
         lw      $s1, 4($sp)
         lw      $s2, 0($sp)
         addi    $sp, $sp, 16
+        jr      $ra
+
+
+# =========================================================
+# Name:             fill_positions
+# =========================================================
+# Description:      this function takes the given board 
+#                   passed in through a0 and fills it
+#                   with positions from the a_coordinate
+#                   and b_coordinate arrays
+#
+# Parameters:
+#       - a0        location of board to set up
+#
+# S Registers:
+#       - s0        number of values in a
+#       - s1        number of values in b
+#       - s2        board dimensions
+#       - s3        ascii A
+#       - s4        ascii B
+#
+# T Registers:
+#       - t0        location of the a coordinate array
+#       - t1        location of the b coordinate array
+#       - t2        pointer to board[row][col]
+#       - t3        x coordinate from array
+#       - t4        y coordinate from array
+# =========================================================
+
+fill_positions:
+        addi    $sp, $sp, -REGISTERS_5
+        sw      $ra, -4+REGISTERS_5($sp)
+        sw      $s0, -8+REGISTERS_5($sp)
+        sw      $s1, -12+REGISTERS_5($sp)
+        sw      $s2, -16+REGISTERS_5($sp)
+        sw      $s3, -20+REGISTERS_5($sp)
+        sw      $s4, -24+REGISTERS_5($sp)
+
+        jal     get_board_dim
+        move    $s2, $v0
+    
+        jal     get_a
+        move    $s0, $v0
+
+        jal     get_b
+        move    $s1, $v0
+
+        la      $t0, a_coordinates
+        la      $t1, b_coordinates
+        li      $s3, 65
+        li      $s4, 66
+        
+        move    $t2, $a0                            # pointer to boar_arr[0]
+        move    $t9, $zero                          # i = 0
+
+fill_a:
+        slt     $t8, $t9, $s0                       # while(i < a_size)
+        beq     $t8, $zero, fill_positions_end
+        
+        # add values into 2d board
+
+        lw      $t3, 0($t0)                         # get row coordinate
+        lw      $t4, 4($t0)                         # get col coordinate
+        
+        # calculate row address #
+        mul     $t2, $s2, 1                         # len_c = size(char) * dim
+        mul     $t2, $t2, $t3                       # roffset = len_c * row
+        add     $t2, $t2, $a0                       # r_addr = base + roffset
+        
+        # calculate column address #
+        add     $t2, $t2, $t4                       # addr = r_addr + col
+
+        sb      $s3, 0($t2)                         # board[row][col] = char
+        
+        addi    $t9, $t9, 1                         # i++
+        addi    $t0, $t0, 8                         # update a_coordinates[i]
+        move    $t2, $a0
+        j       fill_a
+
+        move    $t9, $zero                          # i = 0
+
+fill_positions_end:
+
+        lw      $ra, -4+REGISTERS_5($sp)
+        lw      $s0, -8+REGISTERS_5($sp)
+        lw      $s1, -12+REGISTERS_5($sp)
+        lw      $s2, -16+REGISTERS_5($sp)
+        sw      $s3, -20+REGISTERS_5($sp)
+        sw      $s4, -24+REGISTERS_5($sp)
+        addi    $sp, $sp, REGISTERS_5
         jr      $ra
 
 ###########################################
@@ -540,6 +639,23 @@ get_b:
         lw      $v0, 0($t0)
         jr      $ra
 
+# =========================================================
+# Name:             
+# =========================================================
+# Description:      prints an array of location "structs"
+#                   each structure is 8 bytes long where:
+#                       - 0 -> x coordinate
+#                       - 4 offset -> y coordinate
+#
+# Parameters:
+#       a0 -        the location of array to print
+#       a1 -        the size of the array
+#
+# T Registers:
+#       t0 -        loop counter
+#     
+# =========================================================
+get_2d_pos:
 
 # =========================================================
 # Name:             print_locations
