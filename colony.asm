@@ -577,18 +577,26 @@ fill_a:
         
         # add values into 2d board
 
-        lw      $t3, 0($s1)                         # get row coordinate
-        lw      $t4, 4($s1)                         # get col coordinate
+                                                    # a0 already board addr
+        lw      $a1, 0($s1)                         # get row coordinate
+        lw      $a2, 4($s1)                         # get col coordinate
+        move    $a3, $s2                            # get dim of board
         
-        # calculate row address #
-        mul     $t2, $s2, 1                         # len_c = size(char) * dim
-        mul     $t2, $t2, $t3                       # roffset = len_c * row
-        add     $t2, $t2, $a0                       # r_addr = base + roffset
+        jal     get_pos
         
-        # calculate column address #
-        add     $t2, $t2, $t4                       # addr = r_addr + col
+        sb      $s3, 0($v0)      
+        
+        ## calculate row address #
 
-        sb      $s3, 0($t2)                         # board[row][col] = char
+        #mul     $t2, $s2, 1                         # len_c = size(char) * dim
+        #mul     $t2, $t2, $t3                       # roffset = len_c * row
+        #add     $t2, $t2, $a0                       # r_addr = base + roffset
+        #
+        ## calculate column address #
+
+        #add     $t2, $t2, $t4                       # addr = r_addr + col
+
+        #sb      $s3, 0($t2)                         # board[row][col] = char
         
         addi    $t9, $t9, 1                         # i++
         addi    $s1, $s1, 8                         # update a_coordinates[i]
@@ -635,21 +643,36 @@ get_b:
         jr      $ra
 
 # =========================================================
-# Name:             print_locations
+# Name:             get_pos
 # =========================================================
-# Description:      prints an array of location "structs"
-#                   each structure is 8 bytes long where:
-#                       - 0 -> x coordinate
-#                       - 4 offset -> y coordinate
+# Description:      gets the addr of board[row][col] in 
+#                   the given array
 #
 # Parameters:
-#       a0 -        the location of array to print
-#       a1 -        the size of the array
+#       a0 -        the location of array to access
+#       a1 -        the row value
+#       a2 -        the col value
+#       a3 -        the dim of the board
 #
-# T Registers:
+# Returns:
+#       v0 - the addr of board[row][col]
 #     
 # =========================================================
+
 get_pos:
+
+        # calculate row address #
+
+        mul     $v0, $a3, 1                         # len_c = size(char) * dim
+        mul     $v0, $v0, $a1                       # roffset = len_c * row
+        add     $v0, $a0, $v0                      # r_addr = base + roffset
+        
+        # calculate column address #
+
+        add     $v0, $v0, $a2                       # addr = r_addr + col
+        
+        jr      $ra
+        
 
 # =========================================================
 # Name:             print_locations
