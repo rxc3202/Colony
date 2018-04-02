@@ -536,15 +536,14 @@ setup_end:
 #       - a0        location of board to set up
 #
 # S Registers:
-#       - s0        number of values in a
-#       - s1        number of values in b
+#       - s0        number of values in a/b
+#       - s1        current array (a or b)
 #       - s2        board dimensions
 #       - s3        ascii A
 #       - s4        ascii B
 #
 # T Registers:
 #       - t0        location of the a coordinate array
-#       - t1        location of the b coordinate array
 #       - t2        pointer to board[row][col]
 #       - t3        x coordinate from array
 #       - t4        y coordinate from array
@@ -565,11 +564,7 @@ fill_positions:
         jal     get_a
         move    $s0, $v0
 
-        jal     get_b
-        move    $s1, $v0
-
-        la      $t0, a_coordinates
-        la      $t1, b_coordinates
+        la      $s1, a_coordinates
         li      $s3, 65
         li      $s4, 66
         
@@ -582,8 +577,8 @@ fill_a:
         
         # add values into 2d board
 
-        lw      $t3, 0($t0)                         # get row coordinate
-        lw      $t4, 4($t0)                         # get col coordinate
+        lw      $t3, 0($s1)                         # get row coordinate
+        lw      $t4, 4($s1)                         # get col coordinate
         
         # calculate row address #
         mul     $t2, $s2, 1                         # len_c = size(char) * dim
@@ -596,7 +591,7 @@ fill_a:
         sb      $s3, 0($t2)                         # board[row][col] = char
         
         addi    $t9, $t9, 1                         # i++
-        addi    $t0, $t0, 8                         # update a_coordinates[i]
+        addi    $s1, $s1, 8                         # update a_coordinates[i]
         move    $t2, $a0
         j       fill_a
 
@@ -640,7 +635,7 @@ get_b:
         jr      $ra
 
 # =========================================================
-# Name:             
+# Name:             print_locations
 # =========================================================
 # Description:      prints an array of location "structs"
 #                   each structure is 8 bytes long where:
@@ -652,10 +647,9 @@ get_b:
 #       a1 -        the size of the array
 #
 # T Registers:
-#       t0 -        loop counter
 #     
 # =========================================================
-get_2d_pos:
+get_pos:
 
 # =========================================================
 # Name:             print_locations
