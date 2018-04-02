@@ -539,8 +539,7 @@ setup_end:
 #       - s0        number of values in a/b
 #       - s1        current array (a or b)
 #       - s2        board dimensions
-#       - s3        ascii A
-#       - s4        ascii B
+#       - s3        current ascii value
 #
 # T Registers:
 #       - t0        location of the a coordinate array
@@ -566,18 +565,16 @@ fill_positions:
 
         la      $s1, a_coordinates
         li      $s3, 65
-        li      $s4, 66
         
         move    $t2, $a0                            # pointer to boar_arr[0]
         move    $t9, $zero                          # i = 0
 
 fill_a:
         slt     $t8, $t9, $s0                       # while(i < a_size)
-        beq     $t8, $zero, fill_positions_end
+        beq     $t8, $zero, fill_a_end
         
         # add values into 2d board
 
-                                                    # a0 already board addr
         lw      $a1, 0($s1)                         # get row coordinate
         lw      $a2, 4($s1)                         # get col coordinate
         move    $a3, $s2                            # get dim of board
@@ -586,24 +583,37 @@ fill_a:
         
         sb      $s3, 0($v0)      
         
-        ## calculate row address #
-
-        #mul     $t2, $s2, 1                         # len_c = size(char) * dim
-        #mul     $t2, $t2, $t3                       # roffset = len_c * row
-        #add     $t2, $t2, $a0                       # r_addr = base + roffset
-        #
-        ## calculate column address #
-
-        #add     $t2, $t2, $t4                       # addr = r_addr + col
-
-        #sb      $s3, 0($t2)                         # board[row][col] = char
-        
         addi    $t9, $t9, 1                         # i++
         addi    $s1, $s1, 8                         # update a_coordinates[i]
         move    $t2, $a0
         j       fill_a
 
+fill_a_end:
+
+        jal     get_b           
+        move    $s0, $v0                            # get b address
+        la      $s1, b_coordinates                  # get base of b_arr
+        li      $s3, 66                             # ascii 'B'
         move    $t9, $zero                          # i = 0
+
+fill_b:
+        slt     $t8, $t9, $s0                       # while(i < b_size)
+        beq     $t8, $zero, fill_positions_end
+        
+        # add values into 2d board
+
+        lw      $a1, 0($s1)                         # get row coordinate
+        lw      $a2, 4($s1)                         # get col coordinate
+        move    $a3, $s2                            # get dim of board
+        
+        jal     get_pos
+        
+        sb      $s3, 0($v0)      
+        
+        addi    $t9, $t9, 1                         # i++
+        addi    $s1, $s1, 8                         # update a_coordinates[i]
+        move    $t2, $a0
+        j       fill_b
 
 fill_positions_end:
 
