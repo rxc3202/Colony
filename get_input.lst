@@ -88,199 +88,211 @@
   88 0050               # Parameters:                         
   89 0050               #       a0 -        addr the parameter block
   90 0050               #       a1 -        the location of the illegal string
-  91 0050               # S Registers:
-  92 0050               #       s0 -        the loop max (2xcells to place)
-  93 0050               #       s1 -        the loop counter
-  94 0050               #       s2 -        the location of the x buffer
-  95 0050               #       s3 -        the location of the y buffer
-  96 0050               #
-  97 0050               # T Registers:
-  98 0050               #       t0 -        end loop register
-  99 0050               #       t1 -        temp for row coordinate
- 100 0050               #       t2 -        temp for col coordinate
- 101 0050               #
- 102 0050               # ===================================================================
- 103 0050               
- 104 0050               get_A_cells:
- 105 0050 23BDFFE8	        addi    $sp, $sp, -CELL_FRAMESIZE
- 106 0054 AFBF0014	        sw      $ra, -4+CELL_FRAMESIZE($sp)
- 107 0058 AFB00010	        sw      $s0, -8+CELL_FRAMESIZE($sp)       
- 108 005c AFB1000C	        sw      $s1, -12+CELL_FRAMESIZE($sp)                       
- 109 0060 AFB20008	        sw      $s2, -16+CELL_FRAMESIZE($sp)                       
- 110 0064 AFB30004	        sw      $s3, -20+CELL_FRAMESIZE($sp)
- 111 0068               
- 112 0068 8C8B0000	        lw      $t3, BOARD_DIM($a0)                 
- 113 006c 8D6B0000	        lw      $t3, 0($t3)
- 114 0070                       
- 115 0070 8C900008	        lw      $s0, A_CELLS($a0)                   #load addr of cell cnt
- 116 0074 8E100000	        lw      $s0, 0($s0)                         #load int inside addr 
- 117 0078                   
- 118 0078 8C920010	        lw      $s2, NEXT_A($a0)                    #load addr of loc buf
- 119 007c 8E520000	        lw      $s2, 0($s2)                         #load addr of next el.
- 120 0080                       
- 121 0080 00008821	        move    $s1, $zero                          #i = 0
- 122 0084                       
- 123 0084               loc_loop_A:
- 124 0084 0230402A	        slt     $t0, $s1, $s0                       #if(i < max)
- 125 0088 11000018	        beq     $t0, $zero, A_cells_end             #goto end
- 126 008c                       
- 127 008c                       # get row coordinate # 
- 128 008c               
- 129 008c 34020005	        li      $v0, READ_INT
- 130 0090 0000000C	        syscall
- 131 0094 00404821	        move    $t1, $v0
- 132 0098               
- 133 0098                       # get col coordinate # 
- 134 0098               
- 135 0098 34020005	        li      $v0, READ_INT
- 136 009c 0000000C	        syscall
- 137 00a0 00405021	        move    $t2, $v0
- 138 00a4               
- 139 00a4                       # check valid x #
- 140 00a4 0120C82A	        slt     $t9, $t1, $zero                     #if(in < 0) set t9
- 141 00a8 1720000B	        bne     $t9, $zero, get_A_error
- 142 00ac 012BC02A	        slt     $t8, $t1, $t3                       #if(in >= dim set t8
- 143 00b0 13000009	        beq     $t8, $zero, get_A_error
- 144 00b4               
- 145 00b4                       # check valid y #
- 146 00b4 0140C82A	        slt     $t9, $t2, $zero                     #if(in < 0) set t9
- 147 00b8 17200007	        bne     $t9, $zero, get_A_error
- 148 00bc 014BC02A	        slt     $t8, $t2, $t3                       #if(in >= dim set t8
- 149 00c0 13000005	        beq     $t8, $zero, get_A_error
- 150 00c4               
- 151 00c4                       # place into array #                        # 2 values placed in
- 152 00c4               
- 153 00c4 AE490000	        sw      $t1, 0($s2)                         # 0($s2) = x value
- 154 00c8 AE4A0004	        sw      $t2, 4($s2)                         # 4($s2) = y value
- 155 00cc 22520008	        addi    $s2, $s2, 8                         # increment pointer
- 156 00d0               
- 157 00d0                       # increment loop counter #
- 158 00d0               
- 159 00d0 22310001	        addi    $s1, $s1, 1
- 160 00d4 08000021	        j       loc_loop_A
- 161 00d8               
- 162 00d8               get_A_error:
- 163 00d8 00A02021	        move    $a0, $a1
- 164 00dc 34020004	        li      $v0, PRINT_STRING
- 165 00e0 0000000C	        syscall
- 166 00e4 3402000A	        li      $v0, 10
- 167 00e8 0000000C	        syscall
- 168 00ec               
- 169 00ec               A_cells_end:
- 170 00ec               
- 171 00ec 8FBF0014	        lw      $ra, -4+CELL_FRAMESIZE($sp)
- 172 00f0 8FB00010	        lw      $s0, -8+CELL_FRAMESIZE($sp)       
- 173 00f4 8FB1000C	        lw      $s1, -12+CELL_FRAMESIZE($sp)                       
- 174 00f8 8FB20008	        lw      $s2, -16+CELL_FRAMESIZE($sp)                       
- 175 00fc 8FB30004	        lw      $s3, -20+CELL_FRAMESIZE($sp)
- 176 0100 23BD0018	        addi    $sp, $sp, CELL_FRAMESIZE
- 177 0104                       
- 178 0104 03E00008	        jr      $ra
- 179 0108                       
- 180 0108               # ===================================================================
- 181 0108               # Name:             get_B_cells:
- 182 0108               # ===================================================================
- 183 0108               # Description:      This function loads the user input for the
- 184 0108               #                   locations of the live cells for colony B
- 185 0108               #                   
- 186 0108               # Parameters:                         
- 187 0108               #       a0 -        the parameter block
- 188 0108               #       a1 -        the addr of error string
- 189 0108               # S Registers:
- 190 0108               #       s0 -        the loop max (2xcells to place)
- 191 0108               #       s1 -        the loop counter
- 192 0108               #       s2 -        the location of the x buffer
- 193 0108               #       s3 -        the location of the y buffer
- 194 0108               #
- 195 0108               # T Registers:
- 196 0108               #       t0 -        end loop register
- 197 0108               #
- 198 0108               # ===================================================================
- 199 0108               
- 200 0108               get_B_cells:
- 201 0108 23BDFFE8	        addi    $sp, $sp, -CELL_FRAMESIZE
- 202 010c AFBF0014	        sw      $ra, -4+CELL_FRAMESIZE($sp)
- 203 0110 AFB00010	        sw      $s0, -8+CELL_FRAMESIZE($sp)       
- 204 0114 AFB1000C	        sw      $s1, -12+CELL_FRAMESIZE($sp)                       
- 205 0118 AFB20008	        sw      $s2, -16+CELL_FRAMESIZE($sp)                       
- 206 011c AFB30004	        sw      $s3, -20+CELL_FRAMESIZE($sp)
- 207 0120               
- 208 0120 8C8B0000	        lw      $t3, BOARD_DIM($a0)                 #get dim to compare
- 209 0124 8D6B0000	        lw      $t3, 0($t3)
- 210 0128                       
- 211 0128 8C90000C	        lw      $s0, B_CELLS($a0)                   #load addr of cell cnt
- 212 012c 8E100000	        lw      $s0, 0($s0)                         #load int inside addr 
- 213 0130                   
- 214 0130 8C920014	        lw      $s2, NEXT_B($a0)                    #load addr of loc buf
- 215 0134 8E520000	        lw      $s2, 0($s2)                         #load addr of next el.
- 216 0138                       
- 217 0138 00008821	        move    $s1, $zero                          #i = 0
- 218 013c               
- 219 013c               
- 220 013c               loc_loop_B:
- 221 013c 0230402A	        slt     $t0, $s1, $s0
- 222 0140 11000018	        beq     $t0, $zero, B_cells_end
- 223 0144                       
- 224 0144                       # get row coordinate # 
- 225 0144               
- 226 0144 34020005	        li      $v0, READ_INT
- 227 0148 0000000C	        syscall
- 228 014c 00404821	        move    $t1, $v0
- 229 0150               
- 230 0150                       # get col coordinate # 
- 231 0150               
- 232 0150 34020005	        li      $v0, READ_INT
- 233 0154 0000000C	        syscall
- 234 0158 00405021	        move    $t2, $v0
- 235 015c               
- 236 015c                       # check valid y #
- 237 015c 0120C82A	        slt     $t9, $t1, $zero                     #if(in < 0) set t9
- 238 0160 1720000B	        bne     $t9, $zero, get_B_error
- 239 0164 012BC02A	        slt     $t8, $t1, $t3                       #if(in > dim set t8
- 240 0168 13000009	        beq     $t8, $zero, get_B_error
- 241 016c               
- 242 016c                       # check valid x #
- 243 016c 0140C82A	        slt     $t9, $t2, $zero                     #if(in < 0) set t9
- 244 0170 17200007	        bne     $t9, $zero, get_B_error
- 245 0174 014BC02A	        slt     $t8, $t2, $t3                       #if(in > dim set t8
- 246 0178 13000005	        beq     $t8, $zero, get_B_error
- 247 017c               
- 248 017c                       # place into array #                        # 2 values placed in
- 249 017c               
- 250 017c AE490000	        sw      $t1, 0($s2)                         # 0($s2) = x value
- 251 0180 AE4A0004	        sw      $t2, 4($s2)                         # 4($s2) = y value
- 252 0184 22520008	        addi    $s2, $s2, 8                         # increment pointer
- 253 0188               
- 254 0188                       # increment loop counter #
- 255 0188 22310001	        addi    $s1, $s1, 1
- 256 018c 0800004F	        j       loc_loop_B
+  91 0050               #       a2 -        addr of the copy array
+  92 0050               # S Registers:
+  93 0050               #       s0 -        the loop max (2xcells to place)
+  94 0050               #       s1 -        the loop counter
+  95 0050               #       s2 -        the location of the coord buffer
+  96 0050               #       s3 -        the location of the copy buffer
+  97 0050               #
+  98 0050               # T Registers:
+  99 0050               #       t0 -        end loop register
+ 100 0050               #       t1 -        temp for row coordinate
+ 101 0050               #       t2 -        temp for col coordinate
+ 102 0050               #
+ 103 0050               # ===================================================================
+ 104 0050               
+ 105 0050               get_A_cells:
+ 106 0050 23BDFFE8	        addi    $sp, $sp, -CELL_FRAMESIZE
+ 107 0054 AFBF0014	        sw      $ra, -4+CELL_FRAMESIZE($sp)
+ 108 0058 AFB00010	        sw      $s0, -8+CELL_FRAMESIZE($sp)       
+ 109 005c AFB1000C	        sw      $s1, -12+CELL_FRAMESIZE($sp)                       
+ 110 0060 AFB20008	        sw      $s2, -16+CELL_FRAMESIZE($sp)                       
+ 111 0064 AFB30004	        sw      $s3, -20+CELL_FRAMESIZE($sp)
+ 112 0068               
+ 113 0068 8C8B0000	        lw      $t3, BOARD_DIM($a0)                 
+ 114 006c 8D6B0000	        lw      $t3, 0($t3)
+ 115 0070                       
+ 116 0070 8C900008	        lw      $s0, A_CELLS($a0)                   #load addr of cell cnt
+ 117 0074 8E100000	        lw      $s0, 0($s0)                         #load int inside addr 
+ 118 0078                   
+ 119 0078 8C920010	        lw      $s2, NEXT_A($a0)                    #load addr of loc buf
+ 120 007c 8E520000	        lw      $s2, 0($s2)                         #load addr of next el.
+ 121 0080                       
+ 122 0080 00C09821	        move    $s3, $a2
+ 123 0084 00008821	        move    $s1, $zero                          #i = 0
+ 124 0088                       
+ 125 0088               loc_loop_A:
+ 126 0088 0230402A	        slt     $t0, $s1, $s0                       #if(i < max)
+ 127 008c 1100001B	        beq     $t0, $zero, A_cells_end             #goto end
+ 128 0090                       
+ 129 0090                       # get row coordinate # 
+ 130 0090               
+ 131 0090 34020005	        li      $v0, READ_INT
+ 132 0094 0000000C	        syscall
+ 133 0098 00404821	        move    $t1, $v0
+ 134 009c               
+ 135 009c                       # get col coordinate # 
+ 136 009c               
+ 137 009c 34020005	        li      $v0, READ_INT
+ 138 00a0 0000000C	        syscall
+ 139 00a4 00405021	        move    $t2, $v0
+ 140 00a8               
+ 141 00a8                       # check valid x #
+ 142 00a8 0120C82A	        slt     $t9, $t1, $zero                     #if(in < 0) set t9
+ 143 00ac 1720000E	        bne     $t9, $zero, get_A_error
+ 144 00b0 012BC02A	        slt     $t8, $t1, $t3                       #if(in >= dim set t8
+ 145 00b4 1300000C	        beq     $t8, $zero, get_A_error
+ 146 00b8               
+ 147 00b8                       # check valid y #
+ 148 00b8 0140C82A	        slt     $t9, $t2, $zero                     #if(in < 0) set t9
+ 149 00bc 1720000A	        bne     $t9, $zero, get_A_error
+ 150 00c0 014BC02A	        slt     $t8, $t2, $t3                       #if(in >= dim set t8
+ 151 00c4 13000008	        beq     $t8, $zero, get_A_error
+ 152 00c8               
+ 153 00c8                       # place into array #                        # 2 values placed in
+ 154 00c8               
+ 155 00c8 AE490000	        sw      $t1, 0($s2)                         # 0($s2) = x value
+ 156 00cc AE4A0004	        sw      $t2, 4($s2)                         # 4($s2) = y value
+ 157 00d0 22520008	        addi    $s2, $s2, 8                         # increment pointer
+ 158 00d4               
+ 159 00d4 AE690000	        sw      $t1, 0($s3)                         # 0($s2) = x value
+ 160 00d8 AE6A0004	        sw      $t2, 4($s3)                         # 4($s2) = y value
+ 161 00dc 22730008	        addi    $s3, $s3, 8                         # increment pointer
+ 162 00e0               
+ 163 00e0                       # increment loop counter #
+ 164 00e0               
+ 165 00e0 22310001	        addi    $s1, $s1, 1
+ 166 00e4 08000022	        j       loc_loop_A
+ 167 00e8               
+ 168 00e8               get_A_error:
+ 169 00e8 00A02021	        move    $a0, $a1
+ 170 00ec 34020004	        li      $v0, PRINT_STRING
+ 171 00f0 0000000C	        syscall
+ 172 00f4 3402000A	        li      $v0, 10
+ 173 00f8 0000000C	        syscall
+ 174 00fc               
+ 175 00fc               A_cells_end:
+ 176 00fc               
+ 177 00fc 8FBF0014	        lw      $ra, -4+CELL_FRAMESIZE($sp)
+ 178 0100 8FB00010	        lw      $s0, -8+CELL_FRAMESIZE($sp)       
+ 179 0104 8FB1000C	        lw      $s1, -12+CELL_FRAMESIZE($sp)                       
+ 180 0108 8FB20008	        lw      $s2, -16+CELL_FRAMESIZE($sp)                       
+ 181 010c 8FB30004	        lw      $s3, -20+CELL_FRAMESIZE($sp)
+ 182 0110 23BD0018	        addi    $sp, $sp, CELL_FRAMESIZE
+ 183 0114                       
+ 184 0114 03E00008	        jr      $ra
+ 185 0118                       
+ 186 0118               # ===================================================================
+ 187 0118               # Name:             get_B_cells:
+ 188 0118               # ===================================================================
+ 189 0118               # Description:      This function loads the user input for the
+ 190 0118               #                   locations of the live cells for colony B
+ 191 0118               #                   
+ 192 0118               # Parameters:                         
+ 193 0118               #       a0 -        the parameter block
+ 194 0118               #       a1 -        the addr of error string
+ 195 0118               #       a2 -        the addr of the copy buffer
+ 196 0118               # S Registers:
+ 197 0118               #       s0 -        the loop max (2xcells to place)
+ 198 0118               #       s1 -        the loop counter
+ 199 0118               #       s2 -        the location of the location buffer
+ 200 0118               #       s3 -        the location of the copy location buffer
+ 201 0118               #
+ 202 0118               # T Registers:
+ 203 0118               #       t0 -        end loop register
+ 204 0118               #
+ 205 0118               # ===================================================================
+ 206 0118               
+ 207 0118               get_B_cells:
+ 208 0118 23BDFFE8	        addi    $sp, $sp, -CELL_FRAMESIZE
+ 209 011c AFBF0014	        sw      $ra, -4+CELL_FRAMESIZE($sp)
+ 210 0120 AFB00010	        sw      $s0, -8+CELL_FRAMESIZE($sp)       
+ 211 0124 AFB1000C	        sw      $s1, -12+CELL_FRAMESIZE($sp)                       
+ 212 0128 AFB20008	        sw      $s2, -16+CELL_FRAMESIZE($sp)                       
+ 213 012c AFB30004	        sw      $s3, -20+CELL_FRAMESIZE($sp)
+ 214 0130               
+ 215 0130 8C8B0000	        lw      $t3, BOARD_DIM($a0)                 #get dim to compare
+ 216 0134 8D6B0000	        lw      $t3, 0($t3)
+ 217 0138                       
+ 218 0138 8C90000C	        lw      $s0, B_CELLS($a0)                   #load addr of cell cnt
+ 219 013c 8E100000	        lw      $s0, 0($s0)                         #load int inside addr 
+ 220 0140                   
+ 221 0140 8C920014	        lw      $s2, NEXT_B($a0)                    #load addr of loc buf
+ 222 0144 8E520000	        lw      $s2, 0($s2)                         #load addr of next el.
+ 223 0148                       
+ 224 0148 00008821	        move    $s1, $zero                          #i = 0
+ 225 014c 00C09821	        move    $s3, $a2
+ 226 0150               
+ 227 0150               
+ 228 0150               loc_loop_B:
+ 229 0150 0230402A	        slt     $t0, $s1, $s0
+ 230 0154 1100001B	        beq     $t0, $zero, B_cells_end
+ 231 0158                       
+ 232 0158                       # get row coordinate # 
+ 233 0158               
+ 234 0158 34020005	        li      $v0, READ_INT
+ 235 015c 0000000C	        syscall
+ 236 0160 00404821	        move    $t1, $v0
+ 237 0164               
+ 238 0164                       # get col coordinate # 
+ 239 0164               
+ 240 0164 34020005	        li      $v0, READ_INT
+ 241 0168 0000000C	        syscall
+ 242 016c 00405021	        move    $t2, $v0
+ 243 0170               
+ 244 0170                       # check valid y #
+ 245 0170 0120C82A	        slt     $t9, $t1, $zero                     #if(in < 0) set t9
+ 246 0174 1720000E	        bne     $t9, $zero, get_B_error
+ 247 0178 012BC02A	        slt     $t8, $t1, $t3                       #if(in > dim set t8
+ 248 017c 1300000C	        beq     $t8, $zero, get_B_error
+ 249 0180               
+ 250 0180                       # check valid x #
+ 251 0180 0140C82A	        slt     $t9, $t2, $zero                     #if(in < 0) set t9
+ 252 0184 1720000A	        bne     $t9, $zero, get_B_error
+ 253 0188 014BC02A	        slt     $t8, $t2, $t3                       #if(in > dim set t8
+ 254 018c 13000008	        beq     $t8, $zero, get_B_error
+ 255 0190               
+ 256 0190                       # place into array #                        # 2 values placed in
  257 0190               
- 258 0190               get_B_error:
- 259 0190 00A02021	        move    $a0, $a1
- 260 0194 34020004	        li      $v0, PRINT_STRING
- 261 0198 0000000C	        syscall
- 262 019c 3402000A	        li      $v0, 10
- 263 01a0 0000000C	        syscall
- 264 01a4               
- 265 01a4               B_cells_end:
- 266 01a4               
- 267 01a4 8FBF0014	        lw      $ra, -4+CELL_FRAMESIZE($sp)
- 268 01a8 8FB00010	        lw      $s0, -8+CELL_FRAMESIZE($sp)       
- 269 01ac 8FB1000C	        lw      $s1, -12+CELL_FRAMESIZE($sp)                       
- 270 01b0 8FB20008	        lw      $s2, -16+CELL_FRAMESIZE($sp)                       
- 271 01b4 8FB30004	        lw      $s3, -20+CELL_FRAMESIZE($sp)
- 272 01b8 23BD0018	        addi    $sp, $sp, CELL_FRAMESIZE
- 273 01bc 03E00008	        jr      $ra
- 274 01c0               
+ 258 0190 AE490000	        sw      $t1, 0($s2)                         # 0($s2) = x value
+ 259 0194 AE4A0004	        sw      $t2, 4($s2)                         # 4($s2) = y value
+ 260 0198 22520008	        addi    $s2, $s2, 8                         # increment pointer
+ 261 019c               
+ 262 019c AE690000	        sw      $t1, 0($s3)                         # 0($s3) = x value
+ 263 01a0 AE6A0004	        sw      $t2, 4($s3)                         # 4($s3) = y value
+ 264 01a4 22730008	        addi    $s3, $s3, 8                         # increment pointer
+ 265 01a8               
+ 266 01a8                       # increment loop counter #
+ 267 01a8 22310001	        addi    $s1, $s1, 1
+ 268 01ac 08000054	        j       loc_loop_B
+ 269 01b0               
+ 270 01b0               get_B_error:
+ 271 01b0 00A02021	        move    $a0, $a1
+ 272 01b4 34020004	        li      $v0, PRINT_STRING
+ 273 01b8 0000000C	        syscall
+ 274 01bc 3402000A	        li      $v0, 10
+ 275 01c0 0000000C	        syscall
+ 276 01c4               
+ 277 01c4               B_cells_end:
+ 278 01c4               
+ 279 01c4 8FBF0014	        lw      $ra, -4+CELL_FRAMESIZE($sp)
+ 280 01c8 8FB00010	        lw      $s0, -8+CELL_FRAMESIZE($sp)       
+ 281 01cc 8FB1000C	        lw      $s1, -12+CELL_FRAMESIZE($sp)                       
+ 282 01d0 8FB20008	        lw      $s2, -16+CELL_FRAMESIZE($sp)                       
+ 283 01d4 8FB30004	        lw      $s3, -20+CELL_FRAMESIZE($sp)
+ 284 01d8 23BD0018	        addi    $sp, $sp, CELL_FRAMESIZE
+ 285 01dc 03E00008	        jr      $ra
+ 286 01e0               
 
 
 A_ARR           = 00000018   
 A_CELLS         = 00000008   
-A_cells_end       000000EC R  text 
+A_cells_end       000000FC R  text 
 BOARD_DIM       = 00000000   
 B_ARR           = 0000001C   
 B_CELLS         = 0000000C   
-B_cells_end       000001A4 R  text 
+B_cells_end       000001C4 R  text 
 CELL_FRAMESIZE  = 00000018   
 GENS            = 00000004   
 NEXT_A          = 00000010   
@@ -290,10 +302,10 @@ PRINT_STRING    = 00000004
 READ_INT        = 00000005   
 READ_STRING     = 00000008   
 get_A_cells       00000050 RG text 
-get_A_error       000000D8 R  text 
-get_B_cells       00000108 RG text 
-get_B_error       00000190 R  text 
+get_A_error       000000E8 R  text 
+get_B_cells       00000118 RG text 
+get_B_error       000001B0 R  text 
 get_integer       00000000 RG text 
 integer_store     0000003C R  text 
-loc_loop_A        00000084 R  text 
-loc_loop_B        0000013C R  text 
+loc_loop_A        00000088 R  text 
+loc_loop_B        00000150 R  text 

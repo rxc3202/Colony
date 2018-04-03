@@ -88,11 +88,12 @@ integer_store:
 # Parameters:                         
 #       a0 -        addr the parameter block
 #       a1 -        the location of the illegal string
+#       a2 -        addr of the copy array
 # S Registers:
 #       s0 -        the loop max (2xcells to place)
 #       s1 -        the loop counter
-#       s2 -        the location of the x buffer
-#       s3 -        the location of the y buffer
+#       s2 -        the location of the coord buffer
+#       s3 -        the location of the copy buffer
 #
 # T Registers:
 #       t0 -        end loop register
@@ -118,6 +119,7 @@ get_A_cells:
         lw      $s2, NEXT_A($a0)                    #load addr of loc buf
         lw      $s2, 0($s2)                         #load addr of next el.
         
+        move    $s3, $a2
         move    $s1, $zero                          #i = 0
         
 loc_loop_A:
@@ -154,6 +156,10 @@ loc_loop_A:
         sw      $t2, 4($s2)                         # 4($s2) = y value
         addi    $s2, $s2, 8                         # increment pointer
 
+        sw      $t1, 0($s3)                         # 0($s2) = x value
+        sw      $t2, 4($s3)                         # 4($s2) = y value
+        addi    $s3, $s3, 8                         # increment pointer
+
         # increment loop counter #
 
         addi    $s1, $s1, 1
@@ -186,11 +192,12 @@ A_cells_end:
 # Parameters:                         
 #       a0 -        the parameter block
 #       a1 -        the addr of error string
+#       a2 -        the addr of the copy buffer
 # S Registers:
 #       s0 -        the loop max (2xcells to place)
 #       s1 -        the loop counter
-#       s2 -        the location of the x buffer
-#       s3 -        the location of the y buffer
+#       s2 -        the location of the location buffer
+#       s3 -        the location of the copy location buffer
 #
 # T Registers:
 #       t0 -        end loop register
@@ -215,6 +222,7 @@ get_B_cells:
         lw      $s2, 0($s2)                         #load addr of next el.
         
         move    $s1, $zero                          #i = 0
+        move    $s3, $a2
 
 
 loc_loop_B:
@@ -250,6 +258,10 @@ loc_loop_B:
         sw      $t1, 0($s2)                         # 0($s2) = x value
         sw      $t2, 4($s2)                         # 4($s2) = y value
         addi    $s2, $s2, 8                         # increment pointer
+
+        sw      $t1, 0($s3)                         # 0($s3) = x value
+        sw      $t2, 4($s3)                         # 4($s3) = y value
+        addi    $s3, $s3, 8                         # increment pointer
 
         # increment loop counter #
         addi    $s1, $s1, 1

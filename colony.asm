@@ -204,6 +204,14 @@ board_2:
         .space      900                             #30x30 char array
         .align      2
 
+a_coordinates_2:
+        .space      7200
+        .align      2
+
+b_coordinates_2:
+        .space      7200
+        .align      2
+
 ###########################################
 # ======================================= #
 # ||        MAIN CODE BLOCK            || #
@@ -274,6 +282,7 @@ main:
         
         la      $a0, param_block
         la      $a1, illegal_point
+        la      $a2, a_coordinates_2
         jal     get_A_cells
 
         # print and get B colony size #
@@ -298,6 +307,7 @@ main:
         
         la      $a0, param_block
         la      $a1, illegal_point
+        la      $a2, b_coordinates_2
         jal     get_B_cells
         
         # == test input grabbing == #
@@ -340,6 +350,7 @@ end_main:
 #
 # T Registers:
 #       t0 -        pointer to a game board at (col, row)
+#       t1 -        loop true var / n friendly
 #
 # =========================================================
 
@@ -355,6 +366,10 @@ run_conway:
 conway_loop:
         slt     $t1, $s0, $s4                       # while(i < gens)
         bne     $t1, $zero, conway_end              # {
+
+        # calculate friendly neighors #
+        
+        
 
 
 
