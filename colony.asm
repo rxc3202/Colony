@@ -311,11 +311,62 @@ main:
         jal     setup_board
         la      $a0, board_1
         jal     print_board
+
+        la      $a0, board_2
+        jal     setup_board
+        la      $a0, board_2
+        jal     print_board
         #jal     run_conway
 
 end_main:
         lw      $ra, -4+FRAMESIZE_48($sp)
         addi    $sp, $sp, FRAMESIZE_48
+        jr      $ra
+
+# =========================================================
+# Name:             run_conway
+# =========================================================
+# Description:      this is the main function for running
+#                   the game of life variation
+#                   
+# Parameters:
+#
+# S Registers:
+#       s0 -        generations needed to run
+#       s1 -        first game board
+#       s2 -        second game board
+#       s3 -        the current cell being considered
+#       s4 -        the current generation we're on
+#
+# T Registers:
+#       t0 -        pointer to a game board at (col, row)
+#
+# =========================================================
+
+run_conway:
+        addi    $sp, $sp, -REGISTERS_5
+        sw      $ra, -4+REGISTERS_5($sp)
+        sw      $s0, -8+REGISTERS_5($sp)
+        sw      $s1, -12+REGISTERS_5($sp)
+        sw      $s2, -16+REGISTERS_5($sp)
+        sw      $s3, -20+REGISTERS_5($sp)
+        sw      $s4, -24+REGISTERS_5($sp)
+
+conway_loop:
+        slt     $t1, $s0, $s4                       # while(i < gens)
+        bne     $t1, $zero, conway_end              # {
+
+
+
+                                                    # }
+conway_end:
+        sw      $ra, -4+REGISTERS_5($sp)
+        sw      $s0, -8+REGISTERS_5($sp)
+        sw      $s1, -12+REGISTERS_5($sp)
+        sw      $s2, -16+REGISTERS_5($sp)
+        sw      $s3, -20+REGISTERS_5($sp)
+        sw      $s4, -24+REGISTERS_5($sp)
+        addi    $sp, $sp, REGISTERS_5
         jr      $ra
 
 # =========================================================

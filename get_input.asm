@@ -48,6 +48,7 @@ B_ARR = 28
 #       a2 -        the upper bound
 #       a3 -        the location of the error message
 # ===================================================================
+
 get_integer:
         addi    $sp, $sp, -8                       
         sw      $ra, 4($sp)
@@ -138,14 +139,14 @@ loc_loop_A:
         # check valid x #
         slt     $t9, $t1, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_A_error
-        slt     $t8, $t3, $t1                       #if(in > dim set t8
-        bne     $t8, $zero, get_A_error
+        slt     $t8, $t1, $t3                       #if(in >= dim set t8
+        beq     $t8, $zero, get_A_error
 
         # check valid y #
         slt     $t9, $t2, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_A_error
-        slt     $t8, $t3, $t2                       #if(in > dim set t8
-        bne     $t8, $zero, get_A_error
+        slt     $t8, $t2, $t3                       #if(in >= dim set t8
+        beq     $t8, $zero, get_A_error
 
         # place into array #                        # 2 values placed in
 
@@ -232,17 +233,17 @@ loc_loop_B:
         syscall
         move    $t2, $v0
 
-        # check valid x #
+        # check valid y #
         slt     $t9, $t1, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_B_error
-        slt     $t8, $t3, $t1                       #if(in > dim set t8
-        bne     $t8, $zero, get_B_error
+        slt     $t8, $t1, $t3                       #if(in > dim set t8
+        beq     $t8, $zero, get_B_error
 
-        # check valid y #
+        # check valid x #
         slt     $t9, $t2, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_B_error
-        slt     $t8, $t3, $t2                       #if(in > dim set t8
-        bne     $t8, $zero, get_B_error
+        slt     $t8, $t2, $t3                       #if(in > dim set t8
+        beq     $t8, $zero, get_B_error
 
         # place into array #                        # 2 values placed in
 
