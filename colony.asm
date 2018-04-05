@@ -40,9 +40,6 @@ REGISTERS_4 = 20
 REGISTERS_5 = 24
 REGISTERS_6 = 28
 
-FRAMESIZE_8 = 	8
-FRAMESIZE_24 =	24
-FRAMESIZE_40 =	40
 FRAMESIZE_48 =	48
 
         .data
@@ -204,18 +201,6 @@ board_2:
         .space      900                             #30x30 char array
         .align      2
 
-a_next_2:
-        .word       a_coordinates_2
-
-a_coordinates_2:
-        .space      7200
-        .align      2
-b_next_2:
-        .word       a_coordinates_2
-
-b_coordinates_2:
-        .space      7200
-        .align      2
 
 ###########################################
 # ======================================= #
@@ -351,9 +336,10 @@ end_main:
 # S Registers:
 #       s0 -        the generation toggle
 #       s1 -        gen count
-#       s2 -        the char being considered as a neigbor
+#       s2 -        the addr of the current board
 #       s3 -        the curr row
 #       s4 -        the current col
+#       s5 -        n = number of neighbors
 #
 # T Registers:
 #       t1 -        row counter
@@ -370,7 +356,6 @@ run_conway:
         sw      $s4, -24+REGISTERS_6($sp)
         sw      $s5, -28+REGISTERS_6($sp)
     
-
         li      $s0, 0                              # gen_toggle = 0
         move    $s1, $zero                          # gen_count = 0
 conway_loop:
@@ -381,10 +366,10 @@ conway_loop:
         bne     $s0, $zero, odd_generation          #else odd;
 
 even_generation:
-        la      $s0, board_1
+        la      $s2, board_1
         j       start_loop
 odd_generation:
-        la      $s0, board_2
+        la      $s2, board_2
 
 start_loop:
         move    $s3, $zero                          # row = 0
@@ -394,52 +379,132 @@ start_loop:
 even_row_loop:
         slt     $t0, $s3, $a1                       # if(row < dim)                    
         beq     $t0, $zero, conway_end 
+        
+        # for(j = 0; j < col; j++)
 
 even_col_loop:
         slt     $t0, $s4, $a1                       #while(col < dim)
         beq     $t0, $zero, even_row_end
 
+        # == store parameters == #
+
         addi    $sp, $sp, -8
         sw      $a0, 0($sp)
         sw      $a1, 4($sp)
-        # code here #
 
-        move    $a0, $s0
-        move    $a1, $t1
-        move    $a2, $t2
-        lw      $a3, 4($sp)
+        # == counting neighbors == #
+
+        move    $a0, $s2                            # p1 = board addr
+        move    $a1, $s3                            # p2 = row
+        move    $a2, $s4                            # p3 = col
+        lw      $a3, 4($sp)                         # p4 = dim
         jal     get_pos                             # get board[row][col]
-        
-        li      $t4, 65
-        li      $t5, 66
         move    $t3, $v0
         lb      $t3, 0($t3)
+
+        li      $t4, 65
+        li      $t5, 66
+
+        # == set up previous generation == #
+
+        beq     $s0, $zero, set_odd_board           # if(toggle = 0)
+        la      $s2, board_1                        # { set odd (board 1) }
+        j       set_prev_done
+set_odd_board:
+        la      $s2, board_2                        # else { set board2 }
+
+set_prev_done:
         beq     $t3, $t4, a_neighbors               #if(baord[row][col] == 'A')
-        beq     $t3, $t4, b_neighbors               #if(board[row][col] == B)
-        j       even_col_end                        #else go next
+        beq     $t3, $t5, b_neighbors               #if(board[row][col] == B)
+        #TODO(how do we make it alive?)
+        j       even_col_end                        #else make alive?
 
 b_neighbors:
-        move    $a0, $s0                            # param1 = board
-        move    $a1, $t1                            # param2 = curr row
-        move    $a2, $t2                            # param3 = curr col
+        move    $a0, $s2                            # param1 = prev_board
+        move    $a1, $s3                            # param2 = curr row
+        move    $a2, $s4                            # param3 = curr col
         li      $a3, 66                             # param4 = B
-        j       count_neighbors
-a_neighbors:
-        move    $a0, $s0
-        move    $a1, $t1
-        move    $a2, $t2
-        li      $a3, 65                             # param4 = A
-        j       count_neighbors
+        jal     count_neighbors
+        move    $s5, $v0                            # N = #B's
+
+        li      $a3, 65                             
+        jal     count_neighbors                     # ret = #A's
+        sub     $s5, $s5, $v0                       # N = Bs - As
+        j       live_die_logic
         
-        # end here #
+a_neighbors:
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
+        li      $a3, 65                             # param4 = A
+        jal     count_neighbors
+        move    $s5, $v0
+        
+        li      $a3, 66                             
+        jal     count_neighbors                     # ret = #Bs
+        sub     $s5, $s5, $v0                       # N = As - Bs
+        j       live_die_logic
+
+        # now do the rest of the logic #
+
+live_die_logic:
+
+        #   get generation i  #
+
+        beq     $s0, $zero, reset_to_even           #if(toggle = 0) then even;
+        bne     $s0, $zero, reset_to_odd            #else odd;
+
+reset_to_even:
+        la      $s2, board_1
+        move    $a0, $s2                            # set params for later use
+        move    $a1, $s3
+        move    $a2, $s4
+        jal     get_board_dim
+        move    $a3, $v0
+        j       n_lt_2
+reset_to_odd:
+        la      $s2, board_2
+        move    $a0, $s2                            #set params for later use
+        move    $a1, $s3
+        move    $a2, $s4
+        jal     get_board_dim
+        move    $a3, $v0
+
+
+n_lt_2:
+
+        # == if N < 2 == #
+
+        slti    $t1, $s5, 2
+        beq     $t1, $zero, n_gt_3
+        jal     get_pos
+        li      $t1, 32
+        sb      $t1, 0($v0)
+
+
+n_gt_3:
+
+        # == if N > 3 == #
+
+        slti    $t1, $s5, 3
+        bne     $t1, $zero, n_2_or_3
+        jal     get_pos
+        li      $t1, 32
+        sb      $t1, 0($v0)
+        
+n_2_or_3:
+       
+        # == if N == 2 or 3 == #
+        # do nothing because the cell stays alive
+        j       even_col_end
 
 even_col_end:
-
         # restore original params #
 
         sw      $a0, 0($sp)
         sw      $a1, 4($sp)
         addi    $sp, $sp, 8
+
 
         addi    $s4, $s4, 1                         # col++
         j       even_col_loop
@@ -449,8 +514,8 @@ even_row_end:
         j       even_row_loop
 
 end_conway_loop:
-        addi    $s1, $s1, 1
-        rem     $s0, $s1, 2                         #
+        addi    $s1, $s1, 1                         #gens ++
+        rem     $s0, $s1, 2                         #toggle = gen_count % 2
         j       conway_loop
                                                     # }
 conway_end:
@@ -461,7 +526,7 @@ conway_end:
         sw      $s3, -20+REGISTERS_6($sp)
         sw      $s4, -24+REGISTERS_6($sp)
         sw      $s5, -28+REGISTERS_6($sp)
-        addi    $sp, $sp, REGISTERS_5
+        addi    $sp, $sp, REGISTERS_6
         jr      $ra
 
 # =========================================================
@@ -476,7 +541,13 @@ conway_end:
 #       a2 -        col number
 #       a3 -        char to check against
 #
-# Parameters:
+# S Registers:
+#       s0 -        the board dim
+#       s1 -        the current row
+#       s2 -        the current col
+#       s3 -        the char to check against
+#       s4 -        the count
+#       s5 -        the opposite char
 #
 # T Registers:
 #       t1 -        bot
@@ -487,13 +558,14 @@ conway_end:
 # =========================================================
 
 count_neighbors:
-        addi    $sp, $sp, -REGISTERS_5
-        sw      $ra, -4+REGISTERS_5($sp)
-        sw      $s0, -8+REGISTERS_5($sp)
-        sw      $s1, -12+REGISTERS_5($sp)
-        sw      $s2, -16+REGISTERS_5($sp)
-        sw      $s3, -20+REGISTERS_5($sp)
-        sw      $s4, -24+REGISTERS_5($sp)
+        addi    $sp, $sp, -REGISTERS_6
+        sw      $ra, -4+REGISTERS_6($sp)
+        sw      $s0, -8+REGISTERS_6($sp)
+        sw      $s1, -12+REGISTERS_6($sp)
+        sw      $s2, -16+REGISTERS_6($sp)
+        sw      $s3, -20+REGISTERS_6($sp)
+        sw      $s4, -24+REGISTERS_6($sp)
+        sw      $s5, -28+REGISTERS_6($sp)
 
         jal     get_board_dim
         move    $s0, $v0
@@ -505,6 +577,15 @@ count_neighbors:
         move    $s3, $a3
         move    $s4, $zero                          #count = 0
 
+        li      $t1, 65
+        beq     $s4, $t1, opp_is_B                  # if(char == A) {
+        li      $s5, 65                             # opp == B
+        j       start_count                         # } else {
+
+opp_is_B:                               
+        li      $s5, 66                             # opp == A }
+
+start_count: 
         addi    $t1, $a1, -1                        # bot = row - 1
         addi    $t2, $a1, 1                         # top = row + 1
         addi    $t3, $a2, -1                        # lft = col - 1
@@ -572,15 +653,51 @@ cmp_right:
         bne     $v0, $s3, count_neighbors_end
         addi    $t8, $t8, 1
 
+cmp_top_left:
+        move    $a1, $t1                            #top
+        move    $a2, $t3                            #left
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[left][top]
+
+        bne     $v0, $s3, count_neighbors_end
+        addi    $t8, $t8, 1
+
+cmp_top_right:
+        move    $a1, $t1                            #top
+        move    $a2, $t4                            #right
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[right][top]
+
+        bne     $v0, $s3, count_neighbors_end
+        addi    $t8, $t8, 1
+
+cmp_bot_left:
+        move    $a1, $t2                            #bot
+        move    $a2, $t3                            #left
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[left][bot]
+
+        bne     $v0, $s3, count_neighbors_end
+        addi    $t8, $t8, 1
+
+cmp_bot_right:
+        move    $a1, $t2                            #bot
+        move    $a2, $t4                            #right
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[right][bot]
+
+        bne     $v0, $s3, count_neighbors_end
+        addi    $t8, $t8, 1
+
 count_neighbors_end:
-        lw      $ra, -4+REGISTERS_5($sp)
-        lw      $s0, -8+REGISTERS_5($sp)
-        lw      $s1, -12+REGISTERS_5($sp)
-        lw      $s2, -16+REGISTERS_5($sp)
-        lw      $s3, -20+REGISTERS_5($sp)
-        lw      $s4, -24+REGISTERS_5($sp)
-        addi    $sp, $sp, REGISTERS_5
-        jr      $ra
+        sw      $ra, -4+REGISTERS_6($sp)
+        sw      $s0, -8+REGISTERS_6($sp)
+        sw      $s1, -12+REGISTERS_6($sp)
+        sw      $s2, -16+REGISTERS_6($sp)
+        sw      $s3, -20+REGISTERS_6($sp)
+        sw      $s4, -24+REGISTERS_6($sp)
+        sw      $s5, -28+REGISTERS_6($sp)
+        addi    $sp, $sp, REGISTERS_6
 
 # =========================================================
 # Name:             print_board 
