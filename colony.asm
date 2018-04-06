@@ -322,15 +322,15 @@ main:
         la      $a0, board_2
         jal     setup_board
         la      $a0, board_2
-        jal     print_board
+        #jal     print_board
 
-        #jal     get_generations
-        #move    $a0, $v0
+        jal     get_generations
+        move    $a0, $v0
 
-        #jal     get_board_dim
-        #move    $a1, $v0
-        #
-        #jal     run_conway
+        jal     get_board_dim
+        move    $a1, $v0
+        
+        jal     run_conway
 
 end_main:
         lw      $ra, -4+FRAMESIZE_48($sp)
@@ -374,8 +374,8 @@ run_conway:
         move    $s1, $zero                          # gen_count = 0
 
 conway_loop:
-        slt     $t1, $a0, $s1                       # while(i < gens)
-        bne     $t1, $zero, conway_end              # {
+        slt     $t1, $s1, $a0                       # while(i < gens)
+        beq     $t1, $zero, conway_end              # {
 
         beq     $s0, $zero, even_generation         #if(toggle = 0) then even;
         bne     $s0, $zero, odd_generation          #else odd;
@@ -518,8 +518,8 @@ n_2_or_3:
 even_col_end:
         # restore original params #
 
-        sw      $a0, 0($sp)
-        sw      $a1, 4($sp)
+        lw      $a0, 0($sp)
+        lw      $a1, 4($sp)
         addi    $sp, $sp, 8
 
 
@@ -533,21 +533,25 @@ even_row_end:
 end_conway_loop:
         
         # == print board == #
+        addi    $sp, $sp, -4
+        sw      $a0, 0($sp)
         move    $a0, $s2
         jal     print_board
+        lw      $a0, 0($sp)
+        addi    $sp, $sp, 4
 
         addi    $s1, $s1, 1                         #gens ++
         rem     $s0, $s1, 2                         #toggle = gen_count % 2
         j       conway_loop
                                                     # }
 conway_end:
-        sw      $ra, -4+REGISTERS_6($sp)
-        sw      $s0, -8+REGISTERS_6($sp)
-        sw      $s1, -12+REGISTERS_6($sp)
-        sw      $s2, -16+REGISTERS_6($sp)
-        sw      $s3, -20+REGISTERS_6($sp)
-        sw      $s4, -24+REGISTERS_6($sp)
-        sw      $s5, -28+REGISTERS_6($sp)
+        lw      $ra, -4+REGISTERS_6($sp)
+        lw      $s0, -8+REGISTERS_6($sp)
+        lw      $s1, -12+REGISTERS_6($sp)
+        lw      $s2, -16+REGISTERS_6($sp)
+        lw      $s3, -20+REGISTERS_6($sp)
+        lw      $s4, -24+REGISTERS_6($sp)
+        lw      $s5, -28+REGISTERS_6($sp)
         addi    $sp, $sp, REGISTERS_6
         jr      $ra
 
