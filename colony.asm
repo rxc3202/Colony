@@ -201,7 +201,13 @@ board_2:
         .space      900                             #30x30 char array
         .align      2
 
+a_coordinates_2:                                          
+        .space      7200                            #space for 300 x's
+        .align      2
 
+b_coordinates_2:                                          
+        .space      7200                            #space for 300 x's
+        .align      2
 ###########################################
 # ======================================= #
 # ||        MAIN CODE BLOCK            || #
@@ -307,6 +313,7 @@ main:
 
         # == set up board == #
 
+        # print generation 0
         la      $a0, board_1
         jal     setup_board
         la      $a0, board_1
@@ -316,6 +323,13 @@ main:
         jal     setup_board
         la      $a0, board_2
         jal     print_board
+
+        #jal     get_generations
+        #move    $a0, $v0
+
+        #jal     get_board_dim
+        #move    $a1, $v0
+        #
         #jal     run_conway
 
 end_main:
@@ -358,6 +372,7 @@ run_conway:
     
         li      $s0, 0                              # gen_toggle = 0
         move    $s1, $zero                          # gen_count = 0
+
 conway_loop:
         slt     $t1, $a0, $s1                       # while(i < gens)
         bne     $t1, $zero, conway_end              # {
@@ -374,11 +389,12 @@ odd_generation:
 start_loop:
         move    $s3, $zero                          # row = 0
         move    $s4, $zero                          # col = 0
+
         # for(i = 0; i < row; i++) {
         
 even_row_loop:
         slt     $t0, $s3, $a1                       # if(row < dim)                    
-        beq     $t0, $zero, conway_end 
+        beq     $t0, $zero, end_conway_loop
         
         # for(j = 0; j < col; j++)
 
@@ -405,11 +421,12 @@ even_col_loop:
         li      $t4, 65
         li      $t5, 66
 
-        # == set up previous generation == #
+        # == set generation i - 1 == #
 
         beq     $s0, $zero, set_odd_board           # if(toggle = 0)
         la      $s2, board_1                        # { set odd (board 1) }
         j       set_prev_done
+
 set_odd_board:
         la      $s2, board_2                        # else { set board2 }
 
@@ -443,7 +460,7 @@ a_neighbors:
         li      $a3, 66                             
         jal     count_neighbors                     # ret = #Bs
         sub     $s5, $s5, $v0                       # N = As - Bs
-        j       live_die_logic
+        #j       live_die_logic
 
         # now do the rest of the logic #
 
@@ -475,18 +492,18 @@ n_lt_2:
 
         # == if N < 2 == #
 
-        slti    $t1, $s5, 2
+        slti    $t1, $s5, 2                       
         beq     $t1, $zero, n_gt_3
-        jal     get_pos
+        jal     get_pos                             # get board_i[col][row]
         li      $t1, 32
         sb      $t1, 0($v0)
 
 
 n_gt_3:
 
-        # == if N > 3 == #
+        # == if N >= 4 == #
 
-        slti    $t1, $s5, 3
+        slti    $t1, $s5, 4
         bne     $t1, $zero, n_2_or_3
         jal     get_pos
         li      $t1, 32
@@ -514,6 +531,11 @@ even_row_end:
         j       even_row_loop
 
 end_conway_loop:
+        
+        # == print board == #
+        move    $a0, $s2
+        jal     print_board
+
         addi    $s1, $s1, 1                         #gens ++
         rem     $s0, $s1, 2                         #toggle = gen_count % 2
         j       conway_loop
@@ -578,7 +600,7 @@ count_neighbors:
         move    $s4, $zero                          #count = 0
 
         li      $t1, 65
-        beq     $s4, $t1, opp_is_B                  # if(char == A) {
+        beq     $s3, $t1, opp_is_B                  # if(char == A) {
         li      $s5, 65                             # opp == B
         j       start_count                         # } else {
 
@@ -597,8 +619,8 @@ start_count:
         addi    $t1, $t0, -1
 
 check_top:
-        slt     $t9, $t2, $t0
-        bne     $t9, $zero, check_left
+        slt     $t9, $t2, $s0                       
+        bne     $t9, $zero, check_left              # if(top < dim) skip wrap
         move    $t2, $zero
 
 check_left:
@@ -607,7 +629,7 @@ check_left:
         addi    $t3, $t0, -1
 
 check_right:
-        slt     $t9, $t4, $t0
+        slt     $t9, $t4, $s0
         bne     $t9, $zero, validate_nbrs
         move    $t4, $zero
 
