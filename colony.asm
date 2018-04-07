@@ -535,6 +535,7 @@ even_col_end:
         j       even_col_loop
 
 even_row_end:
+        move    $s4, $zero                          # col = 0
         addi    $s3, $s3, 1                         # row++
         j       even_row_loop
 
