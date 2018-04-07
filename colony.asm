@@ -444,6 +444,9 @@ b_neighbors:
         jal     count_neighbors
         move    $s5, $v0                            # N = #B's
 
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
         li      $a3, 65                             
         jal     count_neighbors                     # ret = #A's
         sub     $s5, $s5, $v0                       # N = Bs - As
@@ -457,6 +460,9 @@ a_neighbors:
         jal     count_neighbors
         move    $s5, $v0
         
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
         li      $a3, 66                             
         jal     count_neighbors                     # ret = #Bs
         sub     $s5, $s5, $v0                       # N = As - Bs
@@ -497,6 +503,7 @@ n_lt_2:
         jal     get_pos                             # get board_i[col][row]
         li      $t1, 32
         sb      $t1, 0($v0)
+        j       even_col_end
 
 
 n_gt_3:
@@ -508,6 +515,7 @@ n_gt_3:
         jal     get_pos
         li      $t1, 32
         sb      $t1, 0($v0)
+        j       even_col_end
         
 n_2_or_3:
        
@@ -535,7 +543,15 @@ end_conway_loop:
         # == print board == #
         addi    $sp, $sp, -4
         sw      $a0, 0($sp)
-        move    $a0, $s2
+
+        beq     $s0, $zero, prt_b_1
+        la      $a0, board_1
+        j       print_generation
+
+prt_b_1:
+        la      $a0, board_1
+
+print_generation:
         jal     print_board
         lw      $a0, 0($sp)
         addi    $sp, $sp, 4
@@ -620,7 +636,7 @@ start_count:
         # if(bot < 0) bot = dim - 1 #
         slt     $t9, $t1, $zero
         beq     $t9, $zero, check_top
-        addi    $t1, $t0, -1
+        addi    $t1, $s0, -1
 
 check_top:
         slt     $t9, $t2, $s0                       
@@ -630,7 +646,7 @@ check_top:
 check_left:
         slt     $t9, $t3, $zero
         beq     $t9, $zero, check_right
-        addi    $t3, $t0, -1
+        addi    $t3, $s0, -1
 
 check_right:
         slt     $t9, $t4, $s0
@@ -676,7 +692,7 @@ cmp_right:
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[rht][row]
 
-        bne     $v0, $s3, count_neighbors_end
+        bne     $v0, $s3, cmp_top_left
         addi    $t8, $t8, 1
 
 cmp_top_left:
@@ -685,7 +701,7 @@ cmp_top_left:
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[left][top]
 
-        bne     $v0, $s3, count_neighbors_end
+        bne     $v0, $s3, cmp_top_right
         addi    $t8, $t8, 1
 
 cmp_top_right:
@@ -694,7 +710,7 @@ cmp_top_right:
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[right][top]
 
-        bne     $v0, $s3, count_neighbors_end
+        bne     $v0, $s3, cmp_bot_left
         addi    $t8, $t8, 1
 
 cmp_bot_left:
@@ -703,7 +719,7 @@ cmp_bot_left:
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[left][bot]
 
-        bne     $v0, $s3, count_neighbors_end
+        bne     $v0, $s3, cmp_bot_right
         addi    $t8, $t8, 1
 
 cmp_bot_right:
@@ -716,14 +732,18 @@ cmp_bot_right:
         addi    $t8, $t8, 1
 
 count_neighbors_end:
-        sw      $ra, -4+REGISTERS_6($sp)
-        sw      $s0, -8+REGISTERS_6($sp)
-        sw      $s1, -12+REGISTERS_6($sp)
-        sw      $s2, -16+REGISTERS_6($sp)
-        sw      $s3, -20+REGISTERS_6($sp)
-        sw      $s4, -24+REGISTERS_6($sp)
-        sw      $s5, -28+REGISTERS_6($sp)
+
+        move    $v0, $t8    
+    
+        lw      $ra, -4+REGISTERS_6($sp)
+        lw      $s0, -8+REGISTERS_6($sp)
+        lw      $s1, -12+REGISTERS_6($sp)
+        lw      $s2, -16+REGISTERS_6($sp)
+        lw      $s3, -20+REGISTERS_6($sp)
+        lw      $s4, -24+REGISTERS_6($sp)
+        lw      $s5, -28+REGISTERS_6($sp)
         addi    $sp, $sp, REGISTERS_6
+        jr      $ra
 
 # =========================================================
 # Name:             print_board 
