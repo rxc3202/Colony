@@ -2,169 +2,170 @@ Load map
 ========
 
 Module:  colony.obj
- Text segment:  2432 bytes, load point 0x00400000
+ Text segment:  2500 bytes, load point 0x00400000
  Data segment:  31248 bytes, load point 0x10000000
  Symbols:
-                 Name Section Mode    Value
-         debug_params   Text   R   0x00400888
-                   rp   Data   R   0x1000023f
-           check_left   Text   R   0x00400428
-        cmp_bot_right   Text   R   0x004004ec
-           DIM_OFFSET          A   0x00000000
-             B_OFFSET          A   0x0000000c
-           fill_array   Text   R   0x004006b8
-         live_cells_A   Data   R   0x1000003a
-         live_cells_B   Data   R   0x10000065
-        a_coordinates   Data   R   0x10000260
-                minus   Data   R   0x10000243
-              d_b_loc   Data   R   0x10000228
-                    A   Data   R   0x10000247
-               n_gt_3   Text   R   0x00400310
-                    B   Data   R   0x10000249
-      a_coordinates_2   Data   R   0x100041cc
-                d_dim   Data   R   0x100001cb
-       live_die_logic   Text   R   0x004002b4
-        set_odd_board   Text   R   0x0040023c
-             cmp_left   Text   R   0x00400474
-               a_next   Data   R   0x1000025c
-        set_prev_done   Text   R   0x00400244
-        b_coordinates   Data   R   0x10001e84
-          load_blanks   Text   R   0x004006a4
-                get_a   Text   R   0x004007c4
-      end_conway_loop   Text   R   0x0040034c
-                get_b   Text   R   0x004007d4
-                   lp   Data   R   0x1000023a
-  count_neighbors_end   Text   R   0x00400504
-         cmp_bot_left   Text   R   0x004004d4
-          REGISTERS_2          A   0x0000000c
-          generations   Data   R   0x10000250
-          REGISTERS_3          A   0x00000010
-           print_loop   Text   R   0x0040080c
-          REGISTERS_4          A   0x00000014
-             READ_INT          A   0x00000005
-          REGISTERS_5          A   0x00000018
-          REGISTERS_6          A   0x0000001c
-         even_row_end   Text   R   0x00400340
-           GEN_OFFSET          A   0x00000004
-        cmp_top_right   Text   R   0x004004bc
-       print_row_loop   Text   R   0x0040055c
-               n_lt_2   Text   R   0x004002f8
-    enter_generations   Data   R   0x10000014
-            check_top   Text   R   0x0040041c
-              newline   Data   R   0x10000112
-        illegal_cells   Data   R   0x10000175
-           run_conway   Text   R   0x00400198
-              board_1   Data   R   0x10003ac4
-              board_2   Data   R   0x10003e48
-      even_generation   Text   R   0x004001d0
-            d_b_cells   Data   R   0x10000203
-       print_col_loop   Text   R   0x0040058c
-              B_cells   Data   R   0x10000258
-           conway_end   Text   R   0x0040038c
-              get_pos   Text   R   0x004007e4
-        NEXT_B_OFFSET          A   0x00000014
-       gen_banner_end   Data   R   0x10000108
-              tb_loop   Text   R   0x00400628
-          conway_loop   Text   R   0x004001c0
-             A_OFFSET          A   0x00000008
-        even_row_loop   Text   R   0x004001ec
-          b_neighbors   Text   R   0x00400250
-               b_next   Data   R   0x10001e80
-                d_gen   Data   R   0x100001e0
-     print_top_bottom   Text   R   0x00400604
-          setup_board   Text   R   0x00400674
-            board_dim   Data   R   0x1000024c
-      get_generations   Text   R   0x004007b4
-     gen_banner_start   Data   R   0x100000f4
-         even_col_end   Text   R   0x0040032c
-         PRINT_STRING          A   0x00000004
-             opp_is_B   Text   R   0x004003fc
-                comma   Data   R   0x1000023c
-        validate_nbrs   Text   R   0x00400440
-              cmp_bot   Text   R   0x0040045c
-        even_col_loop   Text   R   0x004001f4
-         cmp_top_left   Text   R   0x004004a4
-                 main   Text   RG  0x00400000
-       B_ARRAY_OFFSET          A   0x0000001c
-        get_board_dim   Text   R   0x004007a4
-               banner   Data   R   0x100000ad
-      print_board_end   Text   R   0x004005e8
-                space   Data   R   0x10000114
-     enter_board_size   Data   R   0x10000000
-              d_a_loc   Data   R   0x10000216
-              prt_b_1   Text   R   0x00400364
-                 plus   Data   R   0x10000241
-         end_col_loop   Text   R   0x004005bc
-       odd_generation   Text   R   0x004001dc
-        reset_to_even   Text   R   0x004002bc
-           start_loop   Text   R   0x004001e4
-          check_right   Text   R   0x00400434
-           print_done   Text   R   0x00400874
-         illegal_gens   Data   R   0x10000140
-               tb_end   Text   R   0x00400648
-       A_ARRAY_OFFSET          A   0x00000018
-     print_generation   Text   R   0x0040036c
-      count_neighbors   Text   R   0x004003b0
-      b_coordinates_2   Data   R   0x10005dec
-          print_board   Text   R   0x0040052c
-            setup_end   Text   R   0x004006bc
-            cmp_right   Text   R   0x0040048c
-        illegal_point   Data   R   0x100001a9
-       fill_positions   Text   R   0x004006d4
-             n_2_or_3   Text   R   0x00400328
-         FRAMESIZE_48          A   0x00000030
-             end_main   Text   R   0x0040018c
-        NEXT_A_OFFSET          A   0x00000010
-   fill_positions_end   Text   R   0x00400784
-                  bar   Data   R   0x10000245
-           fill_a_end   Text   R   0x00400740
-      enter_locations   Data   R   0x10000090
-          param_block   Data   R   0x10003aa4
-            d_a_cells   Data   R   0x100001f0
-          start_count   Text   R   0x00400400
-          a_neighbors   Text   R   0x00400284
-      print_locations   Text   R   0x00400804
-              A_cells   Data   R   0x10000254
-           REGISTER_1          A   0x00000008
-          READ_STRING          A   0x00000008
-            PRINT_INT          A   0x00000001
-           PRINT_CHAR          A   0x0000000b
-               fill_a   Text   R   0x00400714
-               fill_b   Text   R   0x00400758
-         reset_to_odd   Text   R   0x004002dc
-         illegal_size   Data   R   0x10000116
+                     Name Section Mode    Value
+             debug_params   Text   R   0x004008cc
+                       rp   Data   R   0x1000023f
+               check_left   Text   R   0x00400438
+            cmp_bot_right   Text   R   0x004004fc
+               DIM_OFFSET          A   0x00000000
+                 B_OFFSET          A   0x0000000c
+               fill_array   Text   R   0x004006fc
+             live_cells_A   Data   R   0x1000003a
+             live_cells_B   Data   R   0x10000065
+            a_coordinates   Data   R   0x10000260
+                    minus   Data   R   0x10000243
+                  d_b_loc   Data   R   0x10000228
+                        A   Data   R   0x10000247
+                   n_gt_3   Text   R   0x00400318
+                        B   Data   R   0x10000249
+          a_coordinates_2   Data   R   0x100041cc
+                    d_dim   Data   R   0x100001cb
+           live_die_logic   Text   R   0x004002bc
+            set_odd_board   Text   R   0x00400244
+                 cmp_left   Text   R   0x00400484
+                   a_next   Data   R   0x1000025c
+            set_prev_done   Text   R   0x0040024c
+            b_coordinates   Data   R   0x10001e84
+              load_blanks   Text   R   0x004006e8
+                    get_a   Text   R   0x00400808
+          end_conway_loop   Text   R   0x00400354
+                    get_b   Text   R   0x00400818
+                       lp   Data   R   0x1000023a
+      count_neighbors_end   Text   R   0x00400514
+             cmp_bot_left   Text   R   0x004004e4
+              REGISTERS_2          A   0x0000000c
+              generations   Data   R   0x10000250
+              REGISTERS_3          A   0x00000010
+               print_loop   Text   R   0x00400850
+              REGISTERS_4          A   0x00000014
+                 READ_INT          A   0x00000005
+              REGISTERS_5          A   0x00000018
+              REGISTERS_6          A   0x0000001c
+             even_row_end   Text   R   0x00400348
+               GEN_OFFSET          A   0x00000004
+            cmp_top_right   Text   R   0x004004cc
+           print_row_loop   Text   R   0x0040056c
+                   n_lt_2   Text   R   0x00400300
+        enter_generations   Data   R   0x10000014
+                check_top   Text   R   0x0040042c
+                  newline   Data   R   0x10000112
+            illegal_cells   Data   R   0x10000175
+               run_conway   Text   R   0x004001a0
+                  board_1   Data   R   0x10003ac4
+                  board_2   Data   R   0x10003e48
+          even_generation   Text   R   0x004001d8
+                d_b_cells   Data   R   0x10000203
+           print_col_loop   Text   R   0x0040059c
+                  B_cells   Data   R   0x10000258
+               conway_end   Text   R   0x0040039c
+                  get_pos   Text   R   0x00400828
+            NEXT_B_OFFSET          A   0x00000014
+           gen_banner_end   Data   R   0x10000108
+                  tb_loop   Text   R   0x00400638
+              conway_loop   Text   R   0x004001c8
+                 A_OFFSET          A   0x00000008
+            even_row_loop   Text   R   0x004001f4
+              b_neighbors   Text   R   0x00400258
+  print_generation_banner   Text   R   0x00400684
+                   b_next   Data   R   0x10001e80
+                    d_gen   Data   R   0x100001e0
+         print_top_bottom   Text   R   0x00400614
+              setup_board   Text   R   0x004006b8
+                board_dim   Data   R   0x1000024c
+          get_generations   Text   R   0x004007f8
+         gen_banner_start   Data   R   0x100000f4
+             even_col_end   Text   R   0x00400334
+             PRINT_STRING          A   0x00000004
+                 opp_is_B   Text   R   0x0040040c
+                    comma   Data   R   0x1000023c
+            validate_nbrs   Text   R   0x00400450
+                  cmp_bot   Text   R   0x0040046c
+            even_col_loop   Text   R   0x004001fc
+             cmp_top_left   Text   R   0x004004b4
+                     main   Text   RG  0x00400000
+           B_ARRAY_OFFSET          A   0x0000001c
+            get_board_dim   Text   R   0x004007e8
+                   banner   Data   R   0x100000ad
+          print_board_end   Text   R   0x004005f8
+                    space   Data   R   0x10000114
+         enter_board_size   Data   R   0x10000000
+                  d_a_loc   Data   R   0x10000216
+                  prt_b_1   Text   R   0x00400374
+                     plus   Data   R   0x10000241
+             end_col_loop   Text   R   0x004005cc
+           odd_generation   Text   R   0x004001e4
+            reset_to_even   Text   R   0x004002c4
+               start_loop   Text   R   0x004001ec
+              check_right   Text   R   0x00400444
+               print_done   Text   R   0x004008b8
+             illegal_gens   Data   R   0x10000140
+                   tb_end   Text   R   0x00400658
+           A_ARRAY_OFFSET          A   0x00000018
+         print_generation   Text   R   0x0040037c
+          count_neighbors   Text   R   0x004003c0
+          b_coordinates_2   Data   R   0x10005dec
+              print_board   Text   R   0x0040053c
+                setup_end   Text   R   0x00400700
+                cmp_right   Text   R   0x0040049c
+            illegal_point   Data   R   0x100001a9
+           fill_positions   Text   R   0x00400718
+                 n_2_or_3   Text   R   0x00400330
+             FRAMESIZE_48          A   0x00000030
+                 end_main   Text   R   0x00400194
+            NEXT_A_OFFSET          A   0x00000010
+       fill_positions_end   Text   R   0x004007c8
+                      bar   Data   R   0x10000245
+               fill_a_end   Text   R   0x00400784
+          enter_locations   Data   R   0x10000090
+              param_block   Data   R   0x10003aa4
+                d_a_cells   Data   R   0x100001f0
+              start_count   Text   R   0x00400410
+              a_neighbors   Text   R   0x0040028c
+          print_locations   Text   R   0x00400848
+                  A_cells   Data   R   0x10000254
+               REGISTER_1          A   0x00000008
+              READ_STRING          A   0x00000008
+                PRINT_INT          A   0x00000001
+               PRINT_CHAR          A   0x0000000b
+                   fill_a   Text   R   0x00400758
+                   fill_b   Text   R   0x0040079c
+             reset_to_odd   Text   R   0x004002e4
+             illegal_size   Data   R   0x10000116
 
 Module:  get_input.obj
- Text segment:  480 bytes, load point 0x00400980
+ Text segment:  480 bytes, load point 0x004009c4
  Symbols:
-                 Name Section Mode    Value
-              B_CELLS          A   0x0000000c
-          B_cells_end   Text   R   0x00400b44
-                A_ARR          A   0x00000018
-          get_A_cells   Text   RG  0x004009d0
-          A_cells_end   Text   R   0x00400a7c
-             READ_INT          A   0x00000005
-            BOARD_DIM          A   0x00000000
-       CELL_FRAMESIZE          A   0x00000018
-          get_B_error   Text   R   0x00400b30
-        integer_store   Text   R   0x004009bc
-                B_ARR          A   0x0000001c
-           loc_loop_A   Text   R   0x00400a08
-           loc_loop_B   Text   R   0x00400ad0
-              A_CELLS          A   0x00000008
-         PRINT_STRING          A   0x00000004
-               NEXT_A          A   0x00000010
-               NEXT_B          A   0x00000014
-          get_integer   Text   RG  0x00400980
-          get_B_cells   Text   RG  0x00400a98
-                 GENS          A   0x00000004
-          get_A_error   Text   R   0x00400a68
-          READ_STRING          A   0x00000008
-            PRINT_INT          A   0x00000001
+                     Name Section Mode    Value
+                  B_CELLS          A   0x0000000c
+              B_cells_end   Text   R   0x00400b88
+                    A_ARR          A   0x00000018
+              get_A_cells   Text   RG  0x00400a14
+              A_cells_end   Text   R   0x00400ac0
+                 READ_INT          A   0x00000005
+                BOARD_DIM          A   0x00000000
+           CELL_FRAMESIZE          A   0x00000018
+              get_B_error   Text   R   0x00400b74
+            integer_store   Text   R   0x00400a00
+                    B_ARR          A   0x0000001c
+               loc_loop_A   Text   R   0x00400a4c
+               loc_loop_B   Text   R   0x00400b14
+                  A_CELLS          A   0x00000008
+             PRINT_STRING          A   0x00000004
+                   NEXT_A          A   0x00000010
+                   NEXT_B          A   0x00000014
+              get_integer   Text   RG  0x004009c4
+              get_B_cells   Text   RG  0x00400adc
+                     GENS          A   0x00000004
+              get_A_error   Text   R   0x00400aac
+              READ_STRING          A   0x00000008
+                PRINT_INT          A   0x00000001
 
 Module:  r2k_startup.obj
- Text segment:  36 bytes, load point 0x00400b60
+ Text segment:  36 bytes, load point 0x00400ba4
  Symbols:
-                 Name Section Mode    Value
-            SYS_EXIT2          A   0x00000011
-       __r2k__entry__   Text   RG  0x00400b64
+                     Name Section Mode    Value
+                SYS_EXIT2          A   0x00000011
+           __r2k__entry__   Text   RG  0x00400ba8

@@ -316,6 +316,10 @@ main:
         # print generation 0
         la      $a0, board_1
         jal     setup_board
+        
+        move    $a0, $zero
+        jal     print_generation_banner
+
         la      $a0, board_1
         jal     print_board
 
@@ -544,6 +548,9 @@ end_conway_loop:
         # == print board == #
         addi    $sp, $sp, -4
         sw      $a0, 0($sp)
+        
+        addi    $a0, $s1, 1
+        jal     print_generation_banner
 
         beq     $s0, $zero, prt_b_1
         la      $a0, board_1
@@ -892,6 +899,35 @@ tb_end:
         
         lw      $ra, 0($sp)
         addi    $sp, $sp, 4
+        jr      $ra
+
+# =========================================================
+# Name:             print_generation_banner
+# =========================================================
+# Description:      this prints the generation number
+#
+# Parameters:
+#       a0  -       the current generation number
+# T Registers:
+#       t0  -       gen_banner_start
+#       t1  -       gen_banner_end
+#       t3  -       the current generation
+# =========================================================
+
+print_generation_banner:
+        move    $t3, $a0
+        li      $v0, PRINT_STRING
+        la      $a0, gen_banner_start
+        syscall
+
+        li      $v0, PRINT_INT
+        move    $a0, $t3
+        syscall
+
+        li      $v0, PRINT_STRING
+        la      $a0, gen_banner_end
+        syscall
+        
         jr      $ra
 
 
