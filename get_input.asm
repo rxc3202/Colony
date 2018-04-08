@@ -257,17 +257,19 @@ loc_loop_B:
         slt     $t8, $t2, $t3                       #if(in > dim set t8
         beq     $t8, $zero, get_B_error
 
-        #addi    $sp, $sp, -8
-        #sw      $a1, 0($sp)
-        #sw      $a2, 4($sp)
-        #
-        #move    $a1, $t1
-        #move    $a2, $t2
-        #jal     check_duplicates
+        addi    $sp, $sp, -8
+        sw      $a1, 0($sp)
+        sw      $a2, 4($sp)
+        
+        move    $a1, $t1
+        move    $a2, $t2
+        jal     check_duplicates
 
-        #lw      $a1, 0($sp)
-        #lw      $a2, 4($sp)
-        #addi    $sp, $sp, 8
+        lw      $a1, 0($sp)
+        lw      $a2, 4($sp)
+        addi    $sp, $sp, 8
+
+        beq     $v0, $zero, get_B_error
 
 
         # place into array #                        # 2 values placed in
@@ -335,7 +337,7 @@ check_duplicates:
         lw      $s0, 0($s0)                         #load int inside addr 
 
         lw      $s1, A_ARR($a0)
-        lw      $s1, 0($s1)
+        #lw      $s1, 0($s1)
 
         move    $s2, $zero
 
@@ -344,7 +346,7 @@ duplicate_loop:
         beq     $t9, $zero, check_dup_end           # {
         
         mul     $t9, $s2, 8                         # offset = size(coor)*idx
-        add     $t9, $s2, $t9                       # a_arr[i]
+        add     $t9, $s1, $t9                       # a_arr[i] base + offset
         lw      $t7, 0($t9)                         # get row
         lw      $t8, 4($t9)                         # get col
 
@@ -360,10 +362,13 @@ dup_loop_end:
         j       duplicate_loop
 
 return_false:
-        move    $v0, $zero
+        move    $v0, $zero                          # there is duplicate
+        j       dup_end_err
         
 check_dup_end:
         li      $v0, 1                              # return no duplicates
+
+dup_end_err:
         lw      $ra, 0($sp)
         lw      $s0, 4($sp)
         lw      $s1, 8($sp)
