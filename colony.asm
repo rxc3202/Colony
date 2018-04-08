@@ -577,7 +577,6 @@ even_col_end:
         lw      $a1, 4($sp)
         addi    $sp, $sp, 8
 
-
         addi    $s4, $s4, 1                         # col++
         j       even_col_loop
 
@@ -595,8 +594,8 @@ end_conway_loop:
         addi    $a0, $s1, 1
         jal     print_generation_banner
 
-        beq     $s0, $zero, prt_b_1
-        la      $a0, board_1
+        beq     $s0, $zero, prt_b_1                 #if(even_gen) prt(board_1)
+        la      $a0, board_2
         j       print_generation
 
 prt_b_1:
@@ -604,7 +603,11 @@ prt_b_1:
 
 print_generation:
         jal     print_board
-        lw      $a0, 0($sp)
+        li      $v0, PRINT_STRING
+        la      $a0, newline
+        syscall
+        
+        lw      $a0, 0($sp)                         #restore params
         addi    $sp, $sp, 4
 
         addi    $s1, $s1, 1                         #gens ++
