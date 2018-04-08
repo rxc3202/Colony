@@ -39,6 +39,8 @@ REGISTERS_3 = 16
 REGISTERS_4 = 20
 REGISTERS_5 = 24
 REGISTERS_6 = 28
+REGISTERS_7 = 32
+REGISTERS_8 = 36
 
 FRAMESIZE_48 =	48
 
@@ -358,21 +360,21 @@ end_main:
 #       s3 -        the curr row
 #       s4 -        the current col
 #       s5 -        n = number of neighbors
+#       s6 -        register == 1 if at dead cell
 #
 # T Registers:
-#       t1 -        row counter
-#       t2 -        col counter
 # =========================================================
 
 run_conway:
-        addi    $sp, $sp, -REGISTERS_6
-        sw      $ra, -4+REGISTERS_6($sp)
-        sw      $s0, -8+REGISTERS_6($sp)
-        sw      $s1, -12+REGISTERS_6($sp)
-        sw      $s2, -16+REGISTERS_6($sp)
-        sw      $s3, -20+REGISTERS_6($sp)
-        sw      $s4, -24+REGISTERS_6($sp)
-        sw      $s5, -28+REGISTERS_6($sp)
+        addi    $sp, $sp, -REGISTERS_7
+        sw      $ra, -4+REGISTERS_7($sp)
+        sw      $s0, -8+REGISTERS_7($sp)
+        sw      $s1, -12+REGISTERS_7($sp)
+        sw      $s2, -16+REGISTERS_7($sp)
+        sw      $s3, -20+REGISTERS_7($sp)
+        sw      $s4, -24+REGISTERS_7($sp)
+        sw      $s5, -28+REGISTERS_7($sp)
+        sw      $s6, -32+REGISTERS_7($sp)
     
         li      $s0, 0                              # gen_toggle = 0
         move    $s1, $zero                          # gen_count = 0
@@ -437,8 +439,24 @@ set_odd_board:
 set_prev_done:
         beq     $t3, $t4, a_neighbors               #if(baord[row][col] == 'A')
         beq     $t3, $t5, b_neighbors               #if(board[row][col] == B)
-        #TODO(how do we make it alive?)
-        j       even_col_end                        #else make alive?
+
+        # == dead cells case == #
+        
+        move    $a0, $s2                            # param1 = prev_board
+        move    $a1, $s3                            # param2 = curr row
+        move    $a2, $s4                            # param3 = curr col
+        li      $a3, 66                             # param4 = B
+        jal     count_neighbors
+        move    $s5, $v0                            # N = #B's
+
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
+        li      $a3, 65                             
+        jal     count_neighbors                     # ret = #A's
+        sub     $s5, $s5, $v0                       # N = Bs - As
+        li      $s6, 1
+        j       live_die_logic
 
 b_neighbors:
         move    $a0, $s2                            # param1 = prev_board
@@ -455,6 +473,7 @@ b_neighbors:
         jal     count_neighbors                     # ret = #A's
         sub     $s5, $s5, $v0                       # N = Bs - As
         j       live_die_logic
+
         
 a_neighbors:
         move    $a0, $s2
@@ -470,7 +489,6 @@ a_neighbors:
         li      $a3, 66                             
         jal     count_neighbors                     # ret = #Bs
         sub     $s5, $s5, $v0                       # N = As - Bs
-        #j       live_die_logic
 
         # now do the rest of the logic #
 
@@ -488,7 +506,8 @@ reset_to_even:
         move    $a2, $s4
         jal     get_board_dim
         move    $a3, $v0
-        j       n_lt_2
+        j       is_dead
+
 reset_to_odd:
         la      $s2, board_2
         move    $a0, $s2                            #set params for later use
@@ -496,8 +515,11 @@ reset_to_odd:
         move    $a2, $s4
         jal     get_board_dim
         move    $a3, $v0
+        j       is_dead
 
-
+is_dead:
+        bne     $s6, $zero, resurrect               # if(dead) goto resurrect
+                                                    # else do normal checks
 n_lt_2:
 
         # == if N < 2 == #
@@ -527,7 +549,28 @@ n_2_or_3:
         # do nothing because the cell stays alive
         j       even_col_end
 
+resurrect:
+        move    $s6, $zero                          # reset bit for next loop
+        li      $t0, 3
+        beq     $s5, $t0, become_B
+        li      $t0, -3
+        beq     $s5, $t0, become_A
+        j       even_col_end
+
+become_A:
+        jal     get_pos
+        li      $t1, 65
+        sb      $t1, 0($v0)                         # dead cell = A
+        j       even_col_end
+
+become_B:
+        jal     get_pos
+        li      $t1, 66
+        sb      $t1, 0($v0)                         # dead cell = B
+        j       even_col_end
+        
 even_col_end:
+
         # restore original params #
 
         lw      $a0, 0($sp)
@@ -569,14 +612,15 @@ print_generation:
         j       conway_loop
                                                     # }
 conway_end:
-        lw      $ra, -4+REGISTERS_6($sp)
-        lw      $s0, -8+REGISTERS_6($sp)
-        lw      $s1, -12+REGISTERS_6($sp)
-        lw      $s2, -16+REGISTERS_6($sp)
-        lw      $s3, -20+REGISTERS_6($sp)
-        lw      $s4, -24+REGISTERS_6($sp)
-        lw      $s5, -28+REGISTERS_6($sp)
-        addi    $sp, $sp, REGISTERS_6
+        lw      $ra, -4+REGISTERS_7($sp)
+        lw      $s0, -8+REGISTERS_7($sp)
+        lw      $s1, -12+REGISTERS_7($sp)
+        lw      $s2, -16+REGISTERS_7($sp)
+        lw      $s3, -20+REGISTERS_7($sp)
+        lw      $s4, -24+REGISTERS_7($sp)
+        lw      $s5, -28+REGISTERS_7($sp)
+        lw      $s6, -32+REGISTERS_7($sp)
+        addi    $sp, $sp, REGISTERS_7
         jr      $ra
 
 # =========================================================
