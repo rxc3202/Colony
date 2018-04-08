@@ -33,6 +33,7 @@ READ_STRING =	8
 PRINT_CHAR = 11 
 
 # various frame sizes used by different routines
+
 REGISTER_1 = 8
 REGISTERS_2 = 12
 REGISTERS_3 = 16
@@ -41,8 +42,6 @@ REGISTERS_5 = 24
 REGISTERS_6 = 28
 REGISTERS_7 = 32
 REGISTERS_8 = 36
-
-FRAMESIZE_48 =	48
 
         .data
         .align      2
@@ -64,7 +63,7 @@ live_cells_B:
         .asciiz "\nEnter number of live cells for colony B: "
 
 enter_locations:
-        .asciiz "\nStart entering locations: \n"
+        .asciiz "\nStart entering locations \n"
 
 # ====================
 #    OTHER STRINGS 
@@ -183,8 +182,6 @@ b_coordinates:
         .space      7200                            #space for 300 y's
         .align      2
 
-        #   === 32 byte structure ===   #
-
 param_block:
         .word       board_dim                       #0 offset
         .word       generations                     #4 offset
@@ -208,8 +205,9 @@ a_coordinates_2:
         .align      2
 
 b_coordinates_2:                                          
-        .space      7200                            #space for 300 x's
+        .space      7200                            #space for 300 y's
         .align      2
+
 ###########################################
 # ======================================= #
 # ||        MAIN CODE BLOCK            || #
@@ -223,17 +221,13 @@ b_coordinates_2:
         .globl      get_B_cells
 
 main:       
-        addi    $sp, $sp, -FRAMESIZE_48
-        sw      $ra, -4+FRAMESIZE_48($sp)
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
         
         li      $v0, PRINT_STRING                   #print banner
         la      $a0, banner
         syscall
         
-        # ---------------------------- #
-        #       Get user input         #
-        # ---------------------------- #
-
         # print and get board dimensions #
 
         li      $v0, PRINT_STRING                    
@@ -311,28 +305,31 @@ main:
         jal     get_B_cells
 
         beq     $v0, $zero, end_main                #error return
+
+        la      $a0, newline
+        li      $v0, PRINT_STRING
+        syscall
         
         # == test input grabbing == #
 
-        la      $a0, param_block
-        jal     debug_params
+        #la      $a0, param_block
+        #jal     debug_params
 
         # == set up board == #
 
-        # print generation 0
-        la      $a0, board_1
+        la      $a0, board_1                        #setup board 1
         jal     setup_board
         
         move    $a0, $zero
-        jal     print_generation_banner
+        jal     print_generation_banner             #print banner
 
-        la      $a0, board_1
+        la      $a0, board_1                        #print board
         jal     print_board
 
-        la      $a0, board_2
-        jal     setup_board
-        la      $a0, board_2
-        #jal     print_board
+        la      $a0, board_2            
+        jal     setup_board                         #setup board2
+
+        # run conway algorithm #
 
         jal     get_generations
         move    $a0, $v0
@@ -344,8 +341,8 @@ main:
 
 
 end_main:
-        lw      $ra, -4+FRAMESIZE_48($sp)
-        addi    $sp, $sp, FRAMESIZE_48
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 # =========================================================
@@ -367,7 +364,6 @@ end_main:
 #       s5 -        n = number of neighbors
 #       s6 -        register == 1 if at dead cell
 #
-# T Registers:
 # =========================================================
 
 run_conway:
@@ -552,6 +548,7 @@ n_2_or_3:
        
         # == if N == 2 or 3 == #
         # do nothing because the cell stays alive
+
         j       even_col_end
 
 resurrect:
@@ -592,7 +589,8 @@ even_row_end:
 
 end_conway_loop:
         
-        # == print board == #
+        # print board after each generation #
+
         addi    $sp, $sp, -4
         sw      $a0, 0($sp)
 
@@ -695,6 +693,7 @@ start_count:
         addi    $t4, $a2, 1                         # rht = col + 1
 
         # if(bot < 0) bot = dim - 1 #
+
         slt     $t9, $t1, $zero
         beq     $t9, $zero, check_top
         addi    $t1, $s0, -1
@@ -717,7 +716,9 @@ check_right:
 validate_nbrs:
 
         move    $a3, $s0                            # param 4 = dim
+
         # == check above == #
+
         move    $a1, $t1
         move    $a2, $s2
         jal     get_pos                             # get (col, top)
@@ -727,7 +728,9 @@ validate_nbrs:
         addi    $t8, $t8, 1
         
 cmp_bot:
+
         # == check below== #
+
         move    $a1, $t2
         move    $a2, $s2
         jal     get_pos                             #get board[col][bot]
@@ -737,7 +740,9 @@ cmp_bot:
         addi    $t8, $t8, 1
 
 cmp_left:
+
         # == check left == #
+
         move    $a1, $s1
         move    $a2, $t3
         jal     get_pos
@@ -747,7 +752,9 @@ cmp_left:
         addi    $t8, $t8, 1
 
 cmp_right:
+
         # == check right == #
+
         move    $a1, $s1
         move    $a2, $t4
         jal     get_pos
@@ -794,7 +801,7 @@ cmp_bot_right:
 
 count_neighbors_end:
 
-        move    $v0, $t8    
+        move    $v0, $t8                            # return count
     
         lw      $ra, -4+REGISTERS_6($sp)
         lw      $s0, -8+REGISTERS_6($sp)
@@ -1195,10 +1202,8 @@ get_pos:
         # calculate column address #
 
         add     $v0, $v0, $a2                       # addr = r_addr + col
-        
         jr      $ra
         
-
 # =========================================================
 # Name:             print_locations
 # =========================================================
@@ -1309,6 +1314,7 @@ debug_params:
         syscall
 
         # print locations #
+
         li      $v0, PRINT_STRING
         la      $a0, d_a_loc
         syscall
@@ -1319,7 +1325,7 @@ debug_params:
         jal     print_locations
 
 
-        # print colony B size#
+        # print colony B size #
 
         li      $v0, PRINT_STRING
         la      $a0, d_b_cells
@@ -1329,7 +1335,8 @@ debug_params:
         li      $v0, PRINT_INT                      #print it
         syscall
 
-        # print locations#
+        # print locations #
+
         li      $v0, PRINT_STRING
         la      $a0, d_b_loc
         syscall
@@ -1347,4 +1354,3 @@ debug_params:
         lw      $s0, 0($sp)
         addi    $sp, $sp, 8
         jr      $ra
-
