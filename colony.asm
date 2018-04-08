@@ -283,6 +283,8 @@ main:
         la      $a2, a_coordinates_2
         jal     get_A_cells
 
+        beq     $v0, $zero, end_main                #error return
+
         # print and get B colony size #
 
         li      $v0, PRINT_STRING                    
@@ -307,6 +309,8 @@ main:
         la      $a1, illegal_point
         la      $a2, b_coordinates_2
         jal     get_B_cells
+
+        beq     $v0, $zero, end_main                #error return
         
         # == test input grabbing == #
 
@@ -337,6 +341,7 @@ main:
         move    $a1, $v0
         
         jal     run_conway
+
 
 end_main:
         lw      $ra, -4+FRAMESIZE_48($sp)
@@ -590,6 +595,10 @@ end_conway_loop:
         # == print board == #
         addi    $sp, $sp, -4
         sw      $a0, 0($sp)
+
+        li      $v0, PRINT_STRING
+        la      $a0, newline
+        syscall
         
         addi    $a0, $s1, 1
         jal     print_generation_banner
@@ -603,9 +612,6 @@ prt_b_1:
 
 print_generation:
         jal     print_board
-        li      $v0, PRINT_STRING
-        la      $a0, newline
-        syscall
         
         lw      $a0, 0($sp)                         #restore params
         addi    $sp, $sp, 4
@@ -841,20 +847,18 @@ print_board:
         jal     get_board_dim
         move    $s0, $v0
 
-        # calculate row to start at#
-
-        addi    $t1, $s0, -1                        # row = dim - 1
+        move    $t1, $zero                          # row = 0
         move    $t2, $zero                          # col = 0
 
-        
 print_row_loop:
-        slt     $t0, $t1, $zero                     #while(row >= 0)
-        bne     $t0, $zero, print_board_end 
+        slt     $t0, $t1, $s0                       #while(row < dim)
+        beq     $t0, $zero, print_board_end 
         la      $a0, bar                            #print("|")
         li      $v0, PRINT_STRING 
         syscall
 
         # calculate row address #
+
         mul     $s1, $s0, 1                         # len_c = size(char) * dim
         mul     $s1, $s1, $t1                       # offset = len_c * row
         add     $s1, $s2, $s1                       # r_addr = base + offset
@@ -886,7 +890,7 @@ end_col_loop:
         syscall
         
         move    $t2, $zero                          # col = 0
-        addi    $t1, $t1, -1                        # row--
+        addi    $t1, $t1, 1                         # row++
         j       print_row_loop
 
 
