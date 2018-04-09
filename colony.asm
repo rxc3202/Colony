@@ -239,7 +239,7 @@ main:
         li      $a2, 30
         la      $a3, illegal_size
         jal     get_integer
-        
+
         # print and get generations #
 
         li      $v0, PRINT_STRING                    
@@ -1143,8 +1143,8 @@ fill_positions_end:
         lw      $s0, -8+REGISTERS_5($sp)
         lw      $s1, -12+REGISTERS_5($sp)
         lw      $s2, -16+REGISTERS_5($sp)
-        sw      $s3, -20+REGISTERS_5($sp)
-        sw      $s4, -24+REGISTERS_5($sp)
+        lw      $s3, -20+REGISTERS_5($sp)
+        lw      $s4, -24+REGISTERS_5($sp)
         addi    $sp, $sp, REGISTERS_5
         jr      $ra
 
@@ -1155,23 +1155,47 @@ fill_positions_end:
 ###########################################
 
 get_board_dim:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, board_dim
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 get_generations:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, generations
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 get_a:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, A_cells
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 get_b:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, B_cells
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 # =========================================================

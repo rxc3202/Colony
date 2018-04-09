@@ -54,6 +54,8 @@ get_integer:
         sw      $ra, 4($sp)
         sw      $s0, 0($sp)                         #store s register
 
+get_int_loop:
+
         li      $v0, READ_INT                       #read int
         syscall        
         
@@ -67,7 +69,7 @@ get_integer:
         li      $v0, PRINT_STRING
         syscall                                     #print error
         move    $a0, $s0                            #restore int addr
-        j       get_integer
+        j       get_int_loop
         
 
 
