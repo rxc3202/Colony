@@ -63,7 +63,7 @@ live_cells_B:
         .asciiz "\nEnter number of live cells for colony B: "
 
 enter_locations:
-        .asciiz "\nStart entering locations \n"
+        .asciiz "\nStart entering locations\n"
 
 # ====================
 #    OTHER STRINGS 
@@ -100,7 +100,7 @@ illegal_cells:
         .asciiz "\nWARNING: illegal number of live cells, try again: "
 
 illegal_point:
-        .asciiz "\nWARNING: illegal point location\n"
+        .asciiz "\nERROR: illegal point location\n"
 
 # ====================
 #    DEBUG STRINGS  
@@ -417,16 +417,6 @@ even_col_loop:
 
         # == counting neighbors == #
 
-        move    $a0, $s2                            # p1 = board addr
-        move    $a1, $s3                            # p2 = row
-        move    $a2, $s4                            # p3 = col
-        lw      $a3, 4($sp)                         # p4 = dim
-        jal     get_pos                             # get board[row][col]
-        move    $t3, $v0
-        lb      $t3, 0($t3)
-
-        li      $t4, 65
-        li      $t5, 66
 
         # == set generation i - 1 == #
 
@@ -438,6 +428,17 @@ set_odd_board:
         la      $s2, board_2                        # else { set board2 }
 
 set_prev_done:
+        move    $a0, $s2                            # p1 = board addr
+        move    $a1, $s3                            # p2 = row
+        move    $a2, $s4                            # p3 = col
+        lw      $a3, 4($sp)                         # p4 = dim
+        jal     get_pos                             # get board[row][col]
+        move    $t3, $v0
+        lb      $t3, 0($t3)
+
+        li      $t4, 65
+        li      $t5, 66
+
         beq     $t3, $t4, a_neighbors               #if(baord[row][col] == 'A')
         beq     $t3, $t5, b_neighbors               #if(board[row][col] == B)
 
@@ -473,6 +474,8 @@ b_neighbors:
         li      $a3, 65                             
         jal     count_neighbors                     # ret = #A's
         sub     $s5, $s5, $v0                       # N = Bs - As
+
+        li      $t8, 66
         j       live_die_logic
 
         
@@ -490,6 +493,8 @@ a_neighbors:
         li      $a3, 66                             
         jal     count_neighbors                     # ret = #Bs
         sub     $s5, $s5, $v0                       # N = As - Bs
+
+        li      $t8, 65
 
         # now do the rest of the logic #
 
@@ -547,7 +552,10 @@ n_gt_3:
 n_2_or_3:
        
         # == if N == 2 or 3 == #
-        # do nothing because the cell stays alive
+        # get char of gen i - 1 and put it there
+        jal     get_pos
+        sb      $t8, 0($v0)
+        
 
         j       even_col_end
 
@@ -557,6 +565,10 @@ resurrect:
         beq     $s5, $t0, become_B
         li      $t0, -3
         beq     $s5, $t0, become_A
+
+        jal     get_pos
+        li      $t1, 32
+        sb      $t1, 0($v0)                         # dead cell = A
         j       even_col_end
 
 become_A:
@@ -719,7 +731,7 @@ validate_nbrs:
 
         # == check above == #
 
-        move    $a1, $t1
+        move    $a1, $t2
         move    $a2, $s2
         jal     get_pos                             # get (col, top)
         lb      $v0, 0($v0)
@@ -731,7 +743,7 @@ cmp_bot:
 
         # == check below== #
 
-        move    $a1, $t2
+        move    $a1, $t1
         move    $a2, $s2
         jal     get_pos                             #get board[col][bot]
         lb      $v0, 0($v0)
@@ -764,7 +776,7 @@ cmp_right:
         addi    $t8, $t8, 1
 
 cmp_top_left:
-        move    $a1, $t1                            #top
+        move    $a1, $t2                            #top
         move    $a2, $t3                            #left
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[left][top]
@@ -773,7 +785,7 @@ cmp_top_left:
         addi    $t8, $t8, 1
 
 cmp_top_right:
-        move    $a1, $t1                            #top
+        move    $a1, $t2                            #top
         move    $a2, $t4                            #right
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[right][top]
@@ -782,7 +794,7 @@ cmp_top_right:
         addi    $t8, $t8, 1
 
 cmp_bot_left:
-        move    $a1, $t2                            #bot
+        move    $a1, $t1                            #bot
         move    $a2, $t3                            #left
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[left][bot]
@@ -791,7 +803,7 @@ cmp_bot_left:
         addi    $t8, $t8, 1
 
 cmp_bot_right:
-        move    $a1, $t2                            #bot
+        move    $a1, $t1                            #bot
         move    $a2, $t4                            #right
         jal     get_pos
         lb      $v0, 0($v0)                         #get board[right][bot]
