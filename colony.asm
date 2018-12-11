@@ -33,17 +33,15 @@ READ_STRING =	8
 PRINT_CHAR = 11 
 
 # various frame sizes used by different routines
+
 REGISTER_1 = 8
 REGISTERS_2 = 12
 REGISTERS_3 = 16
 REGISTERS_4 = 20
 REGISTERS_5 = 24
 REGISTERS_6 = 28
-
-FRAMESIZE_8 = 	8
-FRAMESIZE_24 =	24
-FRAMESIZE_40 =	40
-FRAMESIZE_48 =	48
+REGISTERS_7 = 32
+REGISTERS_8 = 36
 
         .data
         .align      2
@@ -65,7 +63,7 @@ live_cells_B:
         .asciiz "\nEnter number of live cells for colony B: "
 
 enter_locations:
-        .asciiz "\nStart entering locations: \n"
+        .asciiz "\nStart entering locations\n"
 
 # ====================
 #    OTHER STRINGS 
@@ -102,7 +100,7 @@ illegal_cells:
         .asciiz "\nWARNING: illegal number of live cells, try again: "
 
 illegal_point:
-        .asciiz "\nWARNING: illegal point location\n"
+        .asciiz "\nERROR: illegal point location\n"
 
 # ====================
 #    DEBUG STRINGS  
@@ -184,8 +182,6 @@ b_coordinates:
         .space      7200                            #space for 300 y's
         .align      2
 
-        #   === 32 byte structure ===   #
-
 param_block:
         .word       board_dim                       #0 offset
         .word       generations                     #4 offset
@@ -204,6 +200,14 @@ board_2:
         .space      900                             #30x30 char array
         .align      2
 
+a_coordinates_2:                                          
+        .space      7200                            #space for 300 x's
+        .align      2
+
+b_coordinates_2:                                          
+        .space      7200                            #space for 300 y's
+        .align      2
+
 ###########################################
 # ======================================= #
 # ||        MAIN CODE BLOCK            || #
@@ -217,17 +221,13 @@ board_2:
         .globl      get_B_cells
 
 main:       
-        addi    $sp, $sp, -FRAMESIZE_48
-        sw      $ra, -4+FRAMESIZE_48($sp)
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
         
         li      $v0, PRINT_STRING                   #print banner
         la      $a0, banner
         syscall
         
-        # ---------------------------- #
-        #       Get user input         #
-        # ---------------------------- #
-
         # print and get board dimensions #
 
         li      $v0, PRINT_STRING                    
@@ -239,7 +239,7 @@ main:
         li      $a2, 30
         la      $a3, illegal_size
         jal     get_integer
-        
+
         # print and get generations #
 
         li      $v0, PRINT_STRING                    
@@ -274,7 +274,10 @@ main:
         
         la      $a0, param_block
         la      $a1, illegal_point
+        la      $a2, a_coordinates_2
         jal     get_A_cells
+
+        beq     $v0, $zero, end_main                #error return
 
         # print and get B colony size #
 
@@ -298,24 +301,528 @@ main:
         
         la      $a0, param_block
         la      $a1, illegal_point
+        la      $a2, b_coordinates_2
         jal     get_B_cells
+
+        beq     $v0, $zero, end_main                #error return
+
+        la      $a0, newline
+        li      $v0, PRINT_STRING
+        syscall
         
         # == test input grabbing == #
 
-        la      $a0, param_block
-        jal     debug_params
+        #la      $a0, param_block
+        #jal     debug_params
 
         # == set up board == #
 
-        la      $a0, board_1
+        la      $a0, board_1                        #setup board 1
         jal     setup_board
-        la      $a0, board_1
+        
+        move    $a0, $zero
+        jal     print_generation_banner             #print banner
+
+        la      $a0, board_1                        #print board
         jal     print_board
-        #jal     run_conway
+
+        la      $a0, board_2            
+        jal     setup_board                         #setup board2
+
+        # run conway algorithm #
+
+        jal     get_generations
+        move    $a0, $v0
+
+        jal     get_board_dim
+        move    $a1, $v0
+        
+        jal     run_conway
+
 
 end_main:
-        lw      $ra, -4+FRAMESIZE_48($sp)
-        addi    $sp, $sp, FRAMESIZE_48
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
+        jr      $ra
+
+# =========================================================
+# Name:             run_conway
+# =========================================================
+# Description:      this is the main function for running
+#                   the game of life variation
+#                   
+# Parameters:
+#       a0 -        generations needed to run
+#       a1 -        board dimension
+#
+# S Registers:
+#       s0 -        the generation toggle
+#       s1 -        gen count
+#       s2 -        the addr of the current board
+#       s3 -        the curr row
+#       s4 -        the current col
+#       s5 -        n = number of neighbors
+#       s6 -        register == 1 if at dead cell
+#
+# =========================================================
+
+run_conway:
+        addi    $sp, $sp, -REGISTERS_7
+        sw      $ra, -4+REGISTERS_7($sp)
+        sw      $s0, -8+REGISTERS_7($sp)
+        sw      $s1, -12+REGISTERS_7($sp)
+        sw      $s2, -16+REGISTERS_7($sp)
+        sw      $s3, -20+REGISTERS_7($sp)
+        sw      $s4, -24+REGISTERS_7($sp)
+        sw      $s5, -28+REGISTERS_7($sp)
+        sw      $s6, -32+REGISTERS_7($sp)
+    
+        li      $s0, 0                              # gen_toggle = 0
+        move    $s1, $zero                          # gen_count = 0
+
+conway_loop:
+        slt     $t1, $s1, $a0                       # while(i < gens)
+        beq     $t1, $zero, conway_end              # {
+
+        beq     $s0, $zero, even_generation         #if(toggle = 0) then even;
+        bne     $s0, $zero, odd_generation          #else odd;
+
+even_generation:
+        la      $s2, board_1
+        j       start_loop
+odd_generation:
+        la      $s2, board_2
+
+start_loop:
+        move    $s3, $zero                          # row = 0
+        move    $s4, $zero                          # col = 0
+
+        # for(i = 0; i < row; i++) {
+        
+even_row_loop:
+        slt     $t0, $s3, $a1                       # if(row < dim)                    
+        beq     $t0, $zero, end_conway_loop
+        
+        # for(j = 0; j < col; j++)
+
+even_col_loop:
+        slt     $t0, $s4, $a1                       #while(col < dim)
+        beq     $t0, $zero, even_row_end
+
+        # == store parameters == #
+
+        addi    $sp, $sp, -8
+        sw      $a0, 0($sp)
+        sw      $a1, 4($sp)
+
+        # == counting neighbors == #
+
+
+        # == set generation i - 1 == #
+
+        beq     $s0, $zero, set_odd_board           # if(toggle = 0)
+        la      $s2, board_1                        # { set odd (board 1) }
+        j       set_prev_done
+
+set_odd_board:
+        la      $s2, board_2                        # else { set board2 }
+
+set_prev_done:
+        move    $a0, $s2                            # p1 = board addr
+        move    $a1, $s3                            # p2 = row
+        move    $a2, $s4                            # p3 = col
+        lw      $a3, 4($sp)                         # p4 = dim
+        jal     get_pos                             # get board[row][col]
+        move    $t3, $v0
+        lb      $t3, 0($t3)
+
+        li      $t4, 65
+        li      $t5, 66
+
+        beq     $t3, $t4, a_neighbors               #if(baord[row][col] == 'A')
+        beq     $t3, $t5, b_neighbors               #if(board[row][col] == B)
+
+        # == dead cells case == #
+        
+        move    $a0, $s2                            # param1 = prev_board
+        move    $a1, $s3                            # param2 = curr row
+        move    $a2, $s4                            # param3 = curr col
+        li      $a3, 66                             # param4 = B
+        jal     count_neighbors
+        move    $s5, $v0                            # N = #B's
+
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
+        li      $a3, 65                             
+        jal     count_neighbors                     # ret = #A's
+        sub     $s5, $s5, $v0                       # N = Bs - As
+        li      $s6, 1
+        j       live_die_logic
+
+b_neighbors:
+        move    $a0, $s2                            # param1 = prev_board
+        move    $a1, $s3                            # param2 = curr row
+        move    $a2, $s4                            # param3 = curr col
+        li      $a3, 66                             # param4 = B
+        jal     count_neighbors
+        move    $s5, $v0                            # N = #B's
+
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
+        li      $a3, 65                             
+        jal     count_neighbors                     # ret = #A's
+        sub     $s5, $s5, $v0                       # N = Bs - As
+
+        li      $t8, 66
+        j       live_die_logic
+
+        
+a_neighbors:
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
+        li      $a3, 65                             # param4 = A
+        jal     count_neighbors
+        move    $s5, $v0
+        
+        move    $a0, $s2
+        move    $a1, $s3
+        move    $a2, $s4
+        li      $a3, 66                             
+        jal     count_neighbors                     # ret = #Bs
+        sub     $s5, $s5, $v0                       # N = As - Bs
+
+        li      $t8, 65
+
+        # now do the rest of the logic #
+
+live_die_logic:
+
+        #   get generation i  #
+
+        beq     $s0, $zero, reset_to_even           #if(toggle = 0) then even;
+        bne     $s0, $zero, reset_to_odd            #else odd;
+
+reset_to_even:
+        la      $s2, board_1
+        move    $a0, $s2                            # set params for later use
+        move    $a1, $s3
+        move    $a2, $s4
+        jal     get_board_dim
+        move    $a3, $v0
+        j       is_dead
+
+reset_to_odd:
+        la      $s2, board_2
+        move    $a0, $s2                            #set params for later use
+        move    $a1, $s3
+        move    $a2, $s4
+        jal     get_board_dim
+        move    $a3, $v0
+        j       is_dead
+
+is_dead:
+        bne     $s6, $zero, resurrect               # if(dead) goto resurrect
+                                                    # else do normal checks
+n_lt_2:
+
+        # == if N < 2 == #
+
+        slti    $t1, $s5, 2                       
+        beq     $t1, $zero, n_gt_3
+        jal     get_pos                             # get board_i[col][row]
+        li      $t1, 32
+        sb      $t1, 0($v0)
+        j       even_col_end
+
+
+n_gt_3:
+
+        # == if N >= 4 == #
+
+        slti    $t1, $s5, 4
+        bne     $t1, $zero, n_2_or_3
+        jal     get_pos
+        li      $t1, 32
+        sb      $t1, 0($v0)
+        j       even_col_end
+        
+n_2_or_3:
+       
+        # == if N == 2 or 3 == #
+        # get char of gen i - 1 and put it there
+        jal     get_pos
+        sb      $t8, 0($v0)
+        
+
+        j       even_col_end
+
+resurrect:
+        move    $s6, $zero                          # reset bit for next loop
+        li      $t0, 3
+        beq     $s5, $t0, become_B
+        li      $t0, -3
+        beq     $s5, $t0, become_A
+
+        jal     get_pos
+        li      $t1, 32
+        sb      $t1, 0($v0)                         # dead cell = A
+        j       even_col_end
+
+become_A:
+        jal     get_pos
+        li      $t1, 65
+        sb      $t1, 0($v0)                         # dead cell = A
+        j       even_col_end
+
+become_B:
+        jal     get_pos
+        li      $t1, 66
+        sb      $t1, 0($v0)                         # dead cell = B
+        j       even_col_end
+        
+even_col_end:
+
+        # restore original params #
+
+        lw      $a0, 0($sp)
+        lw      $a1, 4($sp)
+        addi    $sp, $sp, 8
+
+        addi    $s4, $s4, 1                         # col++
+        j       even_col_loop
+
+even_row_end:
+        move    $s4, $zero                          # col = 0
+        addi    $s3, $s3, 1                         # row++
+        j       even_row_loop
+
+end_conway_loop:
+        
+        # print board after each generation #
+
+        addi    $sp, $sp, -4
+        sw      $a0, 0($sp)
+
+        li      $v0, PRINT_STRING
+        la      $a0, newline
+        syscall
+        
+        addi    $a0, $s1, 1
+        jal     print_generation_banner
+
+        beq     $s0, $zero, prt_b_1                 #if(even_gen) prt(board_1)
+        la      $a0, board_2
+        j       print_generation
+
+prt_b_1:
+        la      $a0, board_1
+
+print_generation:
+        jal     print_board
+        
+        lw      $a0, 0($sp)                         #restore params
+        addi    $sp, $sp, 4
+
+        addi    $s1, $s1, 1                         #gens ++
+        rem     $s0, $s1, 2                         #toggle = gen_count % 2
+        j       conway_loop
+                                                    # }
+conway_end:
+        lw      $ra, -4+REGISTERS_7($sp)
+        lw      $s0, -8+REGISTERS_7($sp)
+        lw      $s1, -12+REGISTERS_7($sp)
+        lw      $s2, -16+REGISTERS_7($sp)
+        lw      $s3, -20+REGISTERS_7($sp)
+        lw      $s4, -24+REGISTERS_7($sp)
+        lw      $s5, -28+REGISTERS_7($sp)
+        lw      $s6, -32+REGISTERS_7($sp)
+        addi    $sp, $sp, REGISTERS_7
+        jr      $ra
+
+# =========================================================
+# Name:             count_neighbors
+# =========================================================
+# Description:      count neihbors of cell (a2, a1) that
+#                   are 'A's
+#                   
+# Parameters:
+#       a0 -        the addr of the board to check
+#       a1 -        row number
+#       a2 -        col number
+#       a3 -        char to check against
+#
+# S Registers:
+#       s0 -        the board dim
+#       s1 -        the current row
+#       s2 -        the current col
+#       s3 -        the char to check against
+#       s4 -        the count
+#       s5 -        the opposite char
+#
+# T Registers:
+#       t1 -        bot
+#       t2 -        top 
+#       t3 -        left
+#       t4 -        right
+#
+# =========================================================
+
+count_neighbors:
+        addi    $sp, $sp, -REGISTERS_6
+        sw      $ra, -4+REGISTERS_6($sp)
+        sw      $s0, -8+REGISTERS_6($sp)
+        sw      $s1, -12+REGISTERS_6($sp)
+        sw      $s2, -16+REGISTERS_6($sp)
+        sw      $s3, -20+REGISTERS_6($sp)
+        sw      $s4, -24+REGISTERS_6($sp)
+        sw      $s5, -28+REGISTERS_6($sp)
+
+        jal     get_board_dim
+        move    $s0, $v0
+
+        move    $t8, $zero
+
+        move    $s1, $a1
+        move    $s2, $a2
+        move    $s3, $a3
+        move    $s4, $zero                          #count = 0
+
+        li      $t1, 65
+        beq     $s3, $t1, opp_is_B                  # if(char == A) {
+        li      $s5, 65                             # opp == B
+        j       start_count                         # } else {
+
+opp_is_B:                               
+        li      $s5, 66                             # opp == A }
+
+start_count: 
+        addi    $t1, $a1, -1                        # bot = row - 1
+        addi    $t2, $a1, 1                         # top = row + 1
+        addi    $t3, $a2, -1                        # lft = col - 1
+        addi    $t4, $a2, 1                         # rht = col + 1
+
+        # if(bot < 0) bot = dim - 1 #
+
+        slt     $t9, $t1, $zero
+        beq     $t9, $zero, check_top
+        addi    $t1, $s0, -1
+
+check_top:
+        slt     $t9, $t2, $s0                       
+        bne     $t9, $zero, check_left              # if(top < dim) skip wrap
+        move    $t2, $zero
+
+check_left:
+        slt     $t9, $t3, $zero
+        beq     $t9, $zero, check_right
+        addi    $t3, $s0, -1
+
+check_right:
+        slt     $t9, $t4, $s0
+        bne     $t9, $zero, validate_nbrs
+        move    $t4, $zero
+
+validate_nbrs:
+
+        move    $a3, $s0                            # param 4 = dim
+
+        # == check above == #
+
+        move    $a1, $t2
+        move    $a2, $s2
+        jal     get_pos                             # get (col, top)
+        lb      $v0, 0($v0)
+        
+        bne     $v0, $s3, cmp_bot
+        addi    $t8, $t8, 1
+        
+cmp_bot:
+
+        # == check below== #
+
+        move    $a1, $t1
+        move    $a2, $s2
+        jal     get_pos                             #get board[col][bot]
+        lb      $v0, 0($v0)
+
+        bne     $v0, $s3, cmp_left
+        addi    $t8, $t8, 1
+
+cmp_left:
+
+        # == check left == #
+
+        move    $a1, $s1
+        move    $a2, $t3
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[lft][row]
+
+        bne     $v0, $s3, cmp_right
+        addi    $t8, $t8, 1
+
+cmp_right:
+
+        # == check right == #
+
+        move    $a1, $s1
+        move    $a2, $t4
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[rht][row]
+
+        bne     $v0, $s3, cmp_top_left
+        addi    $t8, $t8, 1
+
+cmp_top_left:
+        move    $a1, $t2                            #top
+        move    $a2, $t3                            #left
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[left][top]
+
+        bne     $v0, $s3, cmp_top_right
+        addi    $t8, $t8, 1
+
+cmp_top_right:
+        move    $a1, $t2                            #top
+        move    $a2, $t4                            #right
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[right][top]
+
+        bne     $v0, $s3, cmp_bot_left
+        addi    $t8, $t8, 1
+
+cmp_bot_left:
+        move    $a1, $t1                            #bot
+        move    $a2, $t3                            #left
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[left][bot]
+
+        bne     $v0, $s3, cmp_bot_right
+        addi    $t8, $t8, 1
+
+cmp_bot_right:
+        move    $a1, $t1                            #bot
+        move    $a2, $t4                            #right
+        jal     get_pos
+        lb      $v0, 0($v0)                         #get board[right][bot]
+
+        bne     $v0, $s3, count_neighbors_end
+        addi    $t8, $t8, 1
+
+count_neighbors_end:
+
+        move    $v0, $t8                            # return count
+    
+        lw      $ra, -4+REGISTERS_6($sp)
+        lw      $s0, -8+REGISTERS_6($sp)
+        lw      $s1, -12+REGISTERS_6($sp)
+        lw      $s2, -16+REGISTERS_6($sp)
+        lw      $s3, -20+REGISTERS_6($sp)
+        lw      $s4, -24+REGISTERS_6($sp)
+        lw      $s5, -28+REGISTERS_6($sp)
+        addi    $sp, $sp, REGISTERS_6
         jr      $ra
 
 # =========================================================
@@ -359,20 +866,18 @@ print_board:
         jal     get_board_dim
         move    $s0, $v0
 
-        # calculate row to start at#
-
-        addi    $t1, $s0, -1                        # row = dim - 1
+        move    $t1, $zero                          # row = 0
         move    $t2, $zero                          # col = 0
 
-        
 print_row_loop:
-        slt     $t0, $t1, $zero                     #while(row >= 0)
-        bne     $t0, $zero, print_board_end 
+        slt     $t0, $t1, $s0                       #while(row < dim)
+        beq     $t0, $zero, print_board_end 
         la      $a0, bar                            #print("|")
         li      $v0, PRINT_STRING 
         syscall
 
         # calculate row address #
+
         mul     $s1, $s0, 1                         # len_c = size(char) * dim
         mul     $s1, $s1, $t1                       # offset = len_c * row
         add     $s1, $s2, $s1                       # r_addr = base + offset
@@ -404,7 +909,7 @@ end_col_loop:
         syscall
         
         move    $t2, $zero                          # col = 0
-        addi    $t1, $t1, -1                        # row--
+        addi    $t1, $t1, 1                         # row++
         j       print_row_loop
 
 
@@ -464,6 +969,35 @@ tb_end:
         
         lw      $ra, 0($sp)
         addi    $sp, $sp, 4
+        jr      $ra
+
+# =========================================================
+# Name:             print_generation_banner
+# =========================================================
+# Description:      this prints the generation number
+#
+# Parameters:
+#       a0  -       the current generation number
+# T Registers:
+#       t0  -       gen_banner_start
+#       t1  -       gen_banner_end
+#       t3  -       the current generation
+# =========================================================
+
+print_generation_banner:
+        move    $t3, $a0
+        li      $v0, PRINT_STRING
+        la      $a0, gen_banner_start
+        syscall
+
+        li      $v0, PRINT_INT
+        move    $a0, $t3
+        syscall
+
+        li      $v0, PRINT_STRING
+        la      $a0, gen_banner_end
+        syscall
+        
         jr      $ra
 
 
@@ -621,8 +1155,8 @@ fill_positions_end:
         lw      $s0, -8+REGISTERS_5($sp)
         lw      $s1, -12+REGISTERS_5($sp)
         lw      $s2, -16+REGISTERS_5($sp)
-        sw      $s3, -20+REGISTERS_5($sp)
-        sw      $s4, -24+REGISTERS_5($sp)
+        lw      $s3, -20+REGISTERS_5($sp)
+        lw      $s4, -24+REGISTERS_5($sp)
         addi    $sp, $sp, REGISTERS_5
         jr      $ra
 
@@ -633,23 +1167,47 @@ fill_positions_end:
 ###########################################
 
 get_board_dim:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, board_dim
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 get_generations:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, generations
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 get_a:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, A_cells
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 get_b:
+        addi    $sp, $sp, -4
+        sw      $ra, 0($sp)
+
         la      $t0, B_cells
         lw      $v0, 0($t0)
+
+        lw      $ra, 0($sp)
+        addi    $sp, $sp, 4
         jr      $ra
 
 # =========================================================
@@ -680,10 +1238,8 @@ get_pos:
         # calculate column address #
 
         add     $v0, $v0, $a2                       # addr = r_addr + col
-        
         jr      $ra
         
-
 # =========================================================
 # Name:             print_locations
 # =========================================================
@@ -794,6 +1350,7 @@ debug_params:
         syscall
 
         # print locations #
+
         li      $v0, PRINT_STRING
         la      $a0, d_a_loc
         syscall
@@ -804,7 +1361,7 @@ debug_params:
         jal     print_locations
 
 
-        # print colony B size#
+        # print colony B size #
 
         li      $v0, PRINT_STRING
         la      $a0, d_b_cells
@@ -814,7 +1371,8 @@ debug_params:
         li      $v0, PRINT_INT                      #print it
         syscall
 
-        # print locations#
+        # print locations #
+
         li      $v0, PRINT_STRING
         la      $a0, d_b_loc
         syscall
@@ -832,4 +1390,3 @@ debug_params:
         lw      $s0, 0($sp)
         addi    $sp, $sp, 8
         jr      $ra
-

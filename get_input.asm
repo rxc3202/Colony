@@ -48,10 +48,13 @@ B_ARR = 28
 #       a2 -        the upper bound
 #       a3 -        the location of the error message
 # ===================================================================
+
 get_integer:
         addi    $sp, $sp, -8                       
         sw      $ra, 4($sp)
         sw      $s0, 0($sp)                         #store s register
+
+get_int_loop:
 
         li      $v0, READ_INT                       #read int
         syscall        
@@ -66,7 +69,7 @@ get_integer:
         li      $v0, PRINT_STRING
         syscall                                     #print error
         move    $a0, $s0                            #restore int addr
-        j       get_integer
+        j       get_int_loop
         
 
 
@@ -87,11 +90,12 @@ integer_store:
 # Parameters:                         
 #       a0 -        addr the parameter block
 #       a1 -        the location of the illegal string
+#       a2 -        addr of the copy array
 # S Registers:
 #       s0 -        the loop max (2xcells to place)
 #       s1 -        the loop counter
-#       s2 -        the location of the x buffer
-#       s3 -        the location of the y buffer
+#       s2 -        the location of the coord buffer
+#       s3 -        the location of the copy buffer
 #
 # T Registers:
 #       t0 -        end loop register
@@ -117,6 +121,7 @@ get_A_cells:
         lw      $s2, NEXT_A($a0)                    #load addr of loc buf
         lw      $s2, 0($s2)                         #load addr of next el.
         
+        move    $s3, $a2 
         move    $s1, $zero                          #i = 0
         
 loc_loop_A:
@@ -138,20 +143,24 @@ loc_loop_A:
         # check valid x #
         slt     $t9, $t1, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_A_error
-        slt     $t8, $t3, $t1                       #if(in > dim set t8
-        bne     $t8, $zero, get_A_error
+        slt     $t8, $t1, $t3                       #if(in >= dim set t8
+        beq     $t8, $zero, get_A_error
 
         # check valid y #
         slt     $t9, $t2, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_A_error
-        slt     $t8, $t3, $t2                       #if(in > dim set t8
-        bne     $t8, $zero, get_A_error
+        slt     $t8, $t2, $t3                       #if(in >= dim set t8
+        beq     $t8, $zero, get_A_error
 
         # place into array #                        # 2 values placed in
 
         sw      $t1, 0($s2)                         # 0($s2) = x value
         sw      $t2, 4($s2)                         # 4($s2) = y value
         addi    $s2, $s2, 8                         # increment pointer
+
+        sw      $t1, 0($s3)                         # 0($s2) = x value
+        sw      $t2, 4($s3)                         # 4($s2) = y value
+        addi    $s3, $s3, 8                         # increment pointer
 
         # increment loop counter #
 
@@ -162,11 +171,15 @@ get_A_error:
         move    $a0, $a1
         li      $v0, PRINT_STRING
         syscall
-        li      $v0, 10
-        syscall
+
+        # return false
+        li      $v0, 0
+        j       err_end_A
 
 A_cells_end:
+        li      $v0, 1
 
+err_end_A:
         lw      $ra, -4+CELL_FRAMESIZE($sp)
         lw      $s0, -8+CELL_FRAMESIZE($sp)       
         lw      $s1, -12+CELL_FRAMESIZE($sp)                       
@@ -185,11 +198,12 @@ A_cells_end:
 # Parameters:                         
 #       a0 -        the parameter block
 #       a1 -        the addr of error string
+#       a2 -        the addr of the copy buffer
 # S Registers:
 #       s0 -        the loop max (2xcells to place)
 #       s1 -        the loop counter
-#       s2 -        the location of the x buffer
-#       s3 -        the location of the y buffer
+#       s2 -        the location of the location buffer
+#       s3 -        the location of the copy location buffer
 #
 # T Registers:
 #       t0 -        end loop register
@@ -214,6 +228,7 @@ get_B_cells:
         lw      $s2, 0($s2)                         #load addr of next el.
         
         move    $s1, $zero                          #i = 0
+        move    $s3, $a2
 
 
 loc_loop_B:
@@ -232,23 +247,42 @@ loc_loop_B:
         syscall
         move    $t2, $v0
 
-        # check valid x #
+        # check valid y #
         slt     $t9, $t1, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_B_error
-        slt     $t8, $t3, $t1                       #if(in > dim set t8
-        bne     $t8, $zero, get_B_error
+        slt     $t8, $t1, $t3                       #if(in > dim set t8
+        beq     $t8, $zero, get_B_error
 
-        # check valid y #
+        # check valid x #
         slt     $t9, $t2, $zero                     #if(in < 0) set t9
         bne     $t9, $zero, get_B_error
-        slt     $t8, $t3, $t2                       #if(in > dim set t8
-        bne     $t8, $zero, get_B_error
+        slt     $t8, $t2, $t3                       #if(in > dim set t8
+        beq     $t8, $zero, get_B_error
+
+        addi    $sp, $sp, -8
+        sw      $a1, 0($sp)
+        sw      $a2, 4($sp)
+        
+        move    $a1, $t1
+        move    $a2, $t2
+        jal     check_duplicates
+
+        lw      $a1, 0($sp)
+        lw      $a2, 4($sp)
+        addi    $sp, $sp, 8
+
+        beq     $v0, $zero, get_B_error
+
 
         # place into array #                        # 2 values placed in
 
         sw      $t1, 0($s2)                         # 0($s2) = x value
         sw      $t2, 4($s2)                         # 4($s2) = y value
         addi    $s2, $s2, 8                         # increment pointer
+
+        sw      $t1, 0($s3)                         # 0($s3) = x value
+        sw      $t2, 4($s3)                         # 4($s3) = y value
+        addi    $s3, $s3, 8                         # increment pointer
 
         # increment loop counter #
         addi    $s1, $s1, 1
@@ -258,11 +292,14 @@ get_B_error:
         move    $a0, $a1
         li      $v0, PRINT_STRING
         syscall
-        li      $v0, 10
-        syscall
+
+        li      $v0, 0
+        j       err_end_B
 
 B_cells_end:
+        li      $v0, 1
 
+err_end_B:
         lw      $ra, -4+CELL_FRAMESIZE($sp)
         lw      $s0, -8+CELL_FRAMESIZE($sp)       
         lw      $s1, -12+CELL_FRAMESIZE($sp)                       
@@ -270,4 +307,75 @@ B_cells_end:
         lw      $s3, -20+CELL_FRAMESIZE($sp)
         addi    $sp, $sp, CELL_FRAMESIZE
         jr      $ra
+
+
+# ===================================================================
+# Name:             check_duplicates
+# ===================================================================
+# Description:      function checks if there is a duplicate value
+#                 
+#                   
+# Parameters:                         
+#       a0 -        the parameter block
+#       a1 -        the row coordinate
+#       a2 -        the col coordinate
+# S Registers:
+#       s0 -        the num of a_cels
+#       s1 -        the addr of the a_coordinate array
+#       s2 -        the loop counter
+#
+# T Registers:
+#
+# ===================================================================
+
+check_duplicates:
+        addi    $sp, $sp, -16
+        sw      $ra, 0($sp)
+        sw      $s0, 4($sp)
+        sw      $s1, 8($sp)
+        sw      $s2, 12($sp)
+        
+        lw      $s0, A_CELLS($a0)                   #load addr of cell cnt
+        lw      $s0, 0($s0)                         #load int inside addr 
+
+        lw      $s1, A_ARR($a0)
+        #lw      $s1, 0($s1)
+
+        move    $s2, $zero
+
+duplicate_loop:
+        slt     $t9, $s2, $s0                       # while(i < a_cells)
+        beq     $t9, $zero, check_dup_end           # {
+        
+        mul     $t9, $s2, 8                         # offset = size(coor)*idx
+        add     $t9, $s1, $t9                       # a_arr[i] base + offset
+        lw      $t7, 0($t9)                         # get row
+        lw      $t8, 4($t9)                         # get col
+
+        beq     $t7, $a1, two_match
+        j       dup_loop_end
+
+two_match:
+        beq     $t8, $a2, return_false              #if(row match) check col
+        j       dup_loop_end                        # else next iteration
+
+dup_loop_end:
+        addi    $s2, $s2, 1
+        j       duplicate_loop
+
+return_false:
+        move    $v0, $zero                          # there is duplicate
+        j       dup_end_err
+        
+check_dup_end:
+        li      $v0, 1                              # return no duplicates
+
+dup_end_err:
+        lw      $ra, 0($sp)
+        lw      $s0, 4($sp)
+        lw      $s1, 8($sp)
+        lw      $s2, 12($sp)
+        addi    $sp, $sp, 16
+        jr      $ra
+
 
